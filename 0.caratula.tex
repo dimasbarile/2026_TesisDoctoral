@@ -1,0 +1,59 @@
+\begin{titlepage}
+    \sffamily 
+    
+    \definecolor{bordo}{RGB}{128, 0, 0}
+
+    \begin{tikzpicture}[remember picture, overlay]
+        % Franja bordó (Margen izquierdo)
+        \fill[bordo] (current page.north west) rectangle ([xshift=1.8cm]current page.south west);
+        
+        % Logo (Sigue arriba a la derecha)
+        \node[anchor=north east, xshift=-1cm, yshift=-1cm] at (current page.north east) {
+            \includegraphics[width=8cm]{images/logo_FIUBA.png} 
+        };
+    \end{tikzpicture}
+
+    % Empujamos todo hacia la derecha
+    \hfill 
+    % El minipage ahora se alinea a la derecha
+    \begin{minipage}[t][0.85\textheight]{0.88\textwidth}
+        \begin{flushright} % <--- CAMBIO AQUÍ: Alineación a la derecha
+            
+            \vspace*{3cm} 
+
+            % TÍTULO (33pt, Bold)
+            {\fontsize{33}{40}\selectfont \textbf{Simulación de fenómenos no estacionarios en generación eólica} \par}
+
+            \vspace{2cm}
+
+            % AUTOR (20pt)
+            {\fontsize{20}{24}\selectfont Dimas Alejandro Barile \par}
+
+            \vspace{1.5cm}
+
+            % CARRERA (15pt)
+            {\fontsize{15}{18}\selectfont Doctorado en Ingeniería \par}
+
+            %\vfill 
+			\vspace{1.5cm}
+
+
+            % DIRECTOR Y JURADOS (11pt)
+            {\fontsize{11}{14}\selectfont 
+                \textbf{Director:} Dr. Ing. Alejandro D. Otero (FIUBA) \\
+                \textbf{Co-Director:} Dr. Ing. Roberto Sosa (FIUBA) \\
+                \vspace{0.5cm}
+                \textbf{Jurados:} \\
+                {Nombre del Jurado 1  (Lugar de trabajo)} \\
+                {Nombre del Jurado 2 (Lugar de trabajo)} \\
+                {Nombre del Jurado 3 (Lugar de trabajo)} \par
+            }
+
+            \vspace{1cm}
+
+            % FECHA Y LUGAR (10pt, Italic)
+            {\fontsize{10}{12}\selectfont \textit{Buenos Aires, Diciembre 2026} \par}
+            
+        \end{flushright}
+    \end{minipage}
+\end{titlepage}

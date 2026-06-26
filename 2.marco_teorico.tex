@@ -1,0 +1,87 @@
+\chapter{Marco teórico}
+
+\section{Dinámica de Fluidos Computacional}
+
+\subsection{Método de los volúmenes Finitos}
+
+Acá mostramos las ecuaciones de Navier Stokes y empezamos a tirar integrales hasta llegar al MVF.
+
+\subsection{Resolución de la turbulencia}
+
+Acá vamos a desarrollar la teoría detrás de RANS y LES
+
+\begin{itemize}
+	\item RANS - kEpsilon standard
+	\item RANS - kEpsilon realizable
+	\item RANS - kEpsilon Sogachev
+	\item LES - Smagorinsky
+	\item LES -  oneEquation eddy viscosity
+\end{itemize}
+
+\subsection{OpenFOAM}
+
+Acá vamos a hablar brevemente de la estructura de datos de OpenFOAM. En particular de como agregar términos fuentes.
+
+\section{Capa Límite Atmosférica y Estratificación Térmica}
+
+Acá vamos a describir toda la data de la capa límite atmosférica. 
+
+\subsection{Capa Límite Atmosférica}
+
+Comenzamos con descripciones generales.
+Luego tenemos agregamos perfiles de viento típicos. 
+
+\subsection{Efecto de la Temperatura}
+
+Aca viene la estratificación
+
+\subsection{Capa Superficial Atmosférica vs. Capa Límite Atmosférica}
+
+Los 2 modelos posibles
+
+\subsection{Capa Límite Atmosférica Convencionalmente Neutra (CNABL)}
+
+\section{Simulación de la CNABL}
+
+Acá hay que mencionar una serie de cosas:
+
+\subsection{Hipótesis de Bousinesqq para plantear las ecuaciones con temperatura}
+\subsection{Generación de Condiciones de borde reales}
+Precursor vs tendencias desde WRF
+\subsection{En casos de RANS incorporación de Temperatura vs limitación de la longitud de mezcla}
+estacionario vs transitorio
+
+
+
+
+\section{Aerodinámica de aerogeneradores}
+
+\subsection{Teoría Unidimensional de Momento}
+
+\subsection{Teoría BEM}
+
+\subsection{Aerodinámica real de aerogeneradores}
+
+\subsection{Efecto estela en aerogeneradores}
+
+\subsection{Interacción con la CNABL}
+
+\section{Aerodinámica de aerogeneradores flotantes}
+
+\subsection{Consecuencias del movimiento de la plataforma}
+
+\subsection{Efecto estela en aerogeneradores flotantes}
+
+\section{Modelos simplificados de aerogeneradores}
+
+Acá hacemos una descripción de los modelos existentes, full rotor, actuador sectorial, actuador de superficie
+etc. Luego vamos de lleno con los que nos interesan. 
+
+\subsection{Modelo de Actuador Discal}
+
+\subsection{Modelo de Actuador Lineal}
+
+\section{Técnicas de Análisis de Resultados}
+
+\subsection{Descomposición Ortogonal Propia (POD)}
+\subsection{Promediado en fase}

@@ -1,0 +1,141 @@
+\documentclass[12pt, a4paper, twoside]{report}
+
+% --- 1. CODIFICACIÓN Y LENGUAJE ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, es-tabla]{babel}
+
+% --- 2. TIPOGRAFÍA ---
+\usepackage{helvet} 
+% \renewcommand{\familydefault}{\sfdefault}
+
+% --- 3. DISEÑO DE PÁGINA Y GEOMETRÍA ---
+\usepackage[a4paper, width=170mm, top=20mm, bottom=20mm, bindingoffset=10mm]{geometry}
+\usepackage{parskip} % Maneja espacio entre párrafos automáticamente
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+% Configuración de encabezados
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\fancyhead[LE,RO]{\thepage} % Número de página en las esquinas exteriores
+\fancyhead[LO]{\nouppercase{\leftmark}} %Título cap en impares
+\fancyhead[RE]{Dimas Alejandro Barile} % Nombre en pares
+\setlength{\headheight}{15pt}
+
+% --- 4. MATEMÁTICAS Y SÍMBOLOS ---
+\usepackage{amsmath, amsfonts, amssymb, mathtools}
+\usepackage{physics}
+\usepackage{bm}
+\usepackage{cancel}
+\usepackage{empheq}
+\setcounter{MaxMatrixCols}{12}
+
+% --- 5. FIGURAS Y TABLAS ---
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage{float}
+\usepackage{placeins} % Para \FloatBarrier
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{colortbl}
+\usepackage{adjustbox}
+\usepackage{makecell}
+\usepackage{tabularray} % Paquete moderno para tablas complejas
+
+% --- 6. TIKZ Y GRÁFICOS ---
+\usepackage{tikz}
+\usetikzlibrary{arrows, arrows.meta, fit, positioning, babel, tikzmark, decorations.pathreplacing, quotes}
+
+% --- 7. HERRAMIENTAS DE TEXTO Y REFERENCIAS ---
+\usepackage[numbers, sort&compress]{natbib} % Natbib una sola vez
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Tesis de Doctorado Dimas Barile}
+}
+\usepackage[spanish]{cleveref} % Recomendado para referencias inteligentes
+\usepackage{enumitem}
+\usepackage{appendix}
+\usepackage{soul} % Para tachados/resaltados
+\usepackage{comment}
+\usepackage[commandnameprefix=ifneeded]{changes} % Para correcciones
+
+% --- 8. ÍNDICES Y SECCIONES ---
+\usepackage{minitoc}
+\dominitoc 
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+% --- 9. PERSONALIZACIÓN Y COMANDOS ---
+% Numeración por capítulo (Estándar en tesis doctorales)
+\numberwithin{equation}{chapter}
+\numberwithin{figure}{chapter}
+\numberwithin{table}{chapter}
+
+% Barreras de floats automáticas (Ojo: esto puede dejar espacios en blanco grandes)
+\usepackage{etoolbox}
+\preto{\section}{\FloatBarrier}
+\preto{\subsection}{\FloatBarrier}
+
+% Cajas de colores
+\usepackage[skins]{tcolorbox}
+\newcolumntype{Y}{>{\raggedleft\arraybackslash}X}
+
+% Comandos propios
+\newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\vspace{2mm}\\}
+\definecolor{alizarin}{rgb}{0.3, 0.2, 0.5}
+
+% Comandos de comentarios
+\definechangesauthor[name=Ale, color=orange]{ao}
+\newcommand{\todob}[1]{\todo[color=blue!20]{#1}}
+\newcommand{\todoib}[1]{\todo[inline, color=blue!20]{#1}}
+
+% Flecha sobre igual personalizada
+\newcommand{\eqstackrel}[1]{\stackrel{\substack{\mathclap{#1}\\[0.5ex]\displaystyle\uparrow\\ ~}}{ = } }
+
+% --- CUERPO DEL DOCUMENTO ---
+\begin{document}
+
+\input{0.caratula}
+
+% --- PRELIMINARES (Sin encabezados raros) ---
+\pagestyle{plain}           % Cambia a estilo simple (solo nro de página abajo)
+\pagenumbering{roman}       % Numeración romana (i, ii, iii...)
+
+\tableofcontents
+\listoffigures
+\listoftables
+\cleardoublepage
+
+\input{00.resumen}
+\input{000.agradecimientos}
+%\input{0000.propuesta_indice}
+
+\cleardoublepage
+
+% --- CUERPO DE LA TESIS (Aquí empieza lo bueno) ---
+\pagenumbering{arabic}      % Volver a números normales (1, 2, 3...)
+\pagestyle{fancy}           % Activamos tu encabezado con nombre y capítulo
+
+\input{1.introduccion} % Este debe ser tu primer \chapter{...}
+\input{2.marco_teorico}
+\input{3.wtActuatorFoam}
+\input{4.FOWT}
+\input{5.cambioDeDireccion}
+\input{6.GABLS}
+\input{7.conclusiones}
+
+\newpage
+\bibliographystyle{plainnat}
+\bibliography{bibliografia}
+
+\end{document}

@@ -1,0 +1,171 @@
+\section*{Propuesta Índice}
+
+\setlist{nosep, leftmargin=*} 
+
+\begin{enumerate}
+  % --- CAPÍTULO 1 ---
+  \item \textbf{Introducción}
+  \begin{enumerate}[label*=\arabic*.]
+    \item Historia de la energía eólica
+    \item Contexto global y nacional de la energía eólica
+    \item Desafíos actuales (incremento en el número de turbinas y tamaño de rotores=
+    \item Objetivos generales y específicos
+    \item Estructura de la tesis
+  \end{enumerate}
+
+  % --- CAPÍTULO 2 ---
+  \item \textbf{Marco teórico}
+  \begin{enumerate}[label*=\arabic*.] 
+  	\item Dinámica de Fluidos Computacioanl (CFD)
+  	\begin{enumerate}[label*=\arabic*.]
+  		\item Ecuaciones de N-S
+  		\item Métodos de Volúmenes Finitos
+  		\item Modelado de Turbulencia: RANS y LES
+  		\item OpenFOAM
+  	\end{enumerate}
+    	\item Capa Límite Atmosférica
+    		\begin{enumerate}[label*=\arabic*.]
+    		\item Características generales
+    		\item Perfiles de velocidades de viento
+    		\item Efecto de la temperatura
+    		\item Atmospheric surface layer vs atmospheric boundary layer
+    		\item CNBL
+    		\end{enumerate}
+    \item Aerodinámica de Aerogeneradores
+    		\begin{enumerate}[label*=\arabic*.]
+    			\item Teoría Unidimensional de Momento
+    			\item Teoría BEM
+    			\item Aerodinámica real de aerogeneradores
+    			\item Efecto estela en Aerogeneradores
+    			\item Interacción con la CNABL
+    		\end{enumerate}
+    	\item Modelos para la simulación de aergeneradores
+    		\begin{enumerate}[label*=\arabic*.]
+    		\item Modelo de Actuador Discal
+    		\item Modelo de Actuador Lineal
+    		\item Otros modelos
+    		\end{enumerate}
+    	\item Proper Orthogonal Decomposition
+    	\item Phase Average
+  \end{enumerate} 
+
+  % --- CAPÍTULO 3 ---
+  \item \textbf{Desarrollo de la biblioteca wtActuatorFoam}
+  \begin{enumerate}[label*=\arabic*.]
+  	\item Estado del arte en el modelo de actuador discal y lineal
+    \item Modelos de Actuador Discal
+    \begin{enumerate}[label*=\arabic*.]
+    		\item uniform
+    		\item airfoil
+    		\item numeric
+    		\item adaptive
+    		\item analytic
+		\item genalytic
+    \end{enumerate}
+    \item Modelos de Actuador Lineal
+    \begin{enumerate}[label*=\arabic*.]
+    		\item uniform
+    		\item airfoil
+    		\item numeric
+    		\item adaptive
+    		\item analytic
+		\item genalytic
+	\end{enumerate}
+     \item{Features varios}
+    	\begin{enumerate}[label*=\arabic*.]
+    			\item Actuator mesh
+    			\item Induction model
+    			\item tipFactor
+    			\item rootFactor
+    			\item weighting parameters
+    			\item save Level
+    	\end{enumerate}
+    	\item Análisis de Escalabilidad
+    	\item Validaciones
+    	\begin{enumerate}[label*=\arabic*.]
+    		\item Actuadores discales - WESC
+    		\item Actuadores lineales - TORQUE
+    	\end{enumerate}
+    	\item Caso de Aplicación: Análisis de rotación de la estela en casos de ABL - Paper José
+	\item Conclusiones del capítulo
+  \end{enumerate}
+
+  % --- CAPÍTULO 4 ---
+  \item \textbf{Influencia de las condiciones de entrada en la estela de aergeneradores flotantes}
+  \begin{enumerate}[label*=\arabic*.]
+    \item Introducción
+    \begin{enumerate}[label*=\arabic*.]
+      \item Contexto actual 
+      \item Desafíos nuevos debido al movimiento de la plataforma 
+      \item Efecto estela en turbinas flotantes
+      \item Estado del arte
+    \end{enumerate}
+
+	\item Metodología
+    \begin{enumerate}[label*=\arabic*.]
+      \item Simulación de un disco poroso ante flujo uniforme laminar y turbulento
+      \begin{enumerate}[label*=\arabic*.]
+      	\item Mallado
+      	\item Condiciones de borde
+      	\item Modelo de LES
+      	\item Esquema de simulaciones
+      \end{enumerate}
+      \item Simulación de un disco poroso ante flujo atmosférico a escala 
+       \begin{enumerate}[label*=\arabic*.]
+      	\item Mallado
+      	\item Condiciones de borde
+      	\item Modelo de LES
+      	\item Esquema de simulaciones
+      \end{enumerate}
+      \end{enumerate}
+  \item Análisis de Resultados
+  	\begin{enumerate}[label*=\arabic*.]
+  	  \item Análisis de flujos medios
+	  \item Q-criterion
+  	\item POD
+ 	\item Promediado en fase (phase average)
+  	\end{enumerate}
+
+ \item Conclusiones del capítulo
+    \end{enumerate}
+
+  % --- CAPÍTULO 5 ---
+  \item \textbf{Simulaciones URANS con tendencias atmosféricas en OpenFOAM}
+  \begin{enumerate}[label*=\arabic*.]
+    \item Introducción
+    \begin{enumerate}[label*=\arabic*.]
+    	  \item ABL con incorporación de Temperatura vs limitación de la longitud de mezcla
+      \item Incorporación de la temperatura en CFD - Hipótesis de Boussinesq
+      \item Generación de condiciones reales
+      \begin{enumerate}[label*=\arabic*.]
+      	\item Generación de BC en precursor
+      	\item Uso de tendencias acopladas desde WRF
+      \end{enumerate}
+      \item Estado del arte: SOWFA - CFDWind 2.4.0
+      \item Modelo de turbulencia kEpsilon de Sogachev
+    \end{enumerate}
+	\item Migración del CFDWind-v2412
+	\begin{enumerate}[label*=\arabic*.]
+		\item Funciones de pared ya implementadas en OF 2412
+		\item Funciones de pared reimplementadas en OF 2412
+		\item Reimplementación del modelo de turbulencia
+		\item Validación GABLS3
+		\item Validación GABLS2
+	\end{enumerate}	  
+	\item Casos de Aplicación: RAWSON / Bahía Blanca
+    \item Conclusiones del capítulo 
+  \end{enumerate}
+
+  % --- CAPÍTULO 6 ---
+  \item \textbf{Síntesis y aportes finales}
+  \begin{enumerate}[label*=\arabic*.]
+    \item Avances sobre actuadores
+    \item Avances sobre estelas de turbinas flotantes
+    \item Avances sobre acoples WRF-CFD con URANS
+    \item Líneas futuras de investigación
+  \end{enumerate}
+
+  \item \textbf{Conclusiones generales}
+
+  \item \textbf{Referencias bibliográficas}
+\end{enumerate}
