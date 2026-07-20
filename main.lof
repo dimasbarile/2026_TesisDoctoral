@@ -4,7 +4,7 @@
 \addvspace {10\p@ }
 \contentsline {xchapter}{Marco teórico}{2}{chapter.2}%
 \addvspace {10\p@ }
-\contentsline {xchapter}{Desarrollo de la biblioteca wtActuatorFoam}{5}{chapter.3}%
+\contentsline {xchapter}{Desarrollo de la biblioteca \texttt {wtActuatorFoam}}{5}{chapter.3}%
 \addvspace {10\p@ }
 \contentsline {xchapter}{Influencia de las condiciones de entrada en la estela de aergeneradores flotantes}{7}{chapter.4}%
 \addvspace {10\p@ }
