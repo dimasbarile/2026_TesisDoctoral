@@ -79,9 +79,17 @@ El modelo de actuador discal fue propuesto originalmente por Rankine \citep{rank
 Acá hacemos una descripción de los modelos existentes, full rotor, actuador sectorial, actuador de superficie
 etc. Luego vamos de lleno con los que nos interesan. 
 
-\subsection{Modelo de Actuador Discal}
+AD
 
-\subsection{Modelo de Actuador Lineal}
+AL
+
+Tip factor
+
+Root Factor
+
+gaussiana
+
+
 
 \section{Técnicas de Análisis de Resultados}
 

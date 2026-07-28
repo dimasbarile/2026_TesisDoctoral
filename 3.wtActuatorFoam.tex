@@ -12,12 +12,26 @@ El concepto de Actuador Discal (AD) fue introducido por Froude~\cite{froude1889}
 
 El primer registro de un AD utilizado en un contexto de Dinámica de Fluidos Computacional (CFD, por su sigla en inglés) es el trabajo de Sørensen y Myken~\cite{sorensen1992}. En este caso se presentó un código de diferencias finitas para resolver las ecuaciones de Euler considerando axisimetría, empleando una distribución de fuerzas elíptica preestablecida en lugar de una uniforme, ya que esta última generaba, en el borde del disco, una fuente de vórtice singular a raíz de la discontinuidad de la carga, produciendo inestabilidades numéricas. Luego, en~\cite{sorensen1995}, se publica una versión modificada en la cual se reemplazan las ecuaciones de Euler por las de Navier-Stokes, incorporando un modelo de turbulencia de longitud de mezcla, aunque manteniendo la hipótesis de axisimetría. Como primera validación, el modelo se compara contra la teoría unidimensional de momento considerando un caso con carga uniforme, dando lugar a una primera versión del \texttt{AD uniform}, un actuador ya existía desde tiempos previos pero que en este contexto se utiliza por primera vez junto con CFD. La validación se muestra en la Figura \ref{fig:cap3-ctsorensen1995}, donde se oberva coincidencia para valores de inducción $a\leq\frac{1}{3}$. A continuación, se incorporan datos de perfiles alares para el cálculo de las fuerzas sobre el rotor, dando lugar al \texttt{AD airfoil}. Por otra parte, en~\cite{sorensen1998} se presenta un modelo de \textit{campo completo} (\textit{full-field}), formulado de manera tridimensional en variables vorticidad-velocidad sobre un dominio $(r,\theta,z)$, aunque los cálculos presentados en el trabajo se restringen a la hipótesis de axisimetría, y utilizando nuevamente el \texttt{AD uniform}. En esta misma época también se destacan los trabajos de Masson y otros autores~\cite{masson1997,masson2001,ammara2002}, que consideran flujo laminar y turbulento con modelos RANS, aplicando la técnica de AD \texttt{airfoil} con agregados como el efecto de la torre y el análisis de interferencia entre turbinas dispuestas en dos filas alternadas. A partir de este punto, impulsado por el desarrollo del poder de cómputo, se comienza a dejar atrás la hipótesis de axisimetría, dando paso a códigos completamente tridimensionales. 
 
+
 \begin{figure}[htpb]
     \centering
-        \includegraphics[width=0.6\textwidth]{images/wtActuatorFoam/Ct-Sorensen-1995.jpg}
-        \caption{Validación del \texttt{AD uniform} contra la teoría unidmensional de momento \citep{sorensen1995}}
+    \begin{subfigure}[b]{0.38\textwidth}
+        \centering
+        \includegraphics[height=4.5cm]{images/wtActuatorFoam/Ct-Sorensen-1995.jpg}
+        \caption{}
         \label{fig:cap3-ctsorensen1995}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.6\textwidth}
+        \centering
+        \includegraphics[height=4.5cm]{images/wtActuatorFoam/streamlines-Sorensen-1995}
+        \caption{}
+        \label{fig:cap3-IsoLinessorensen1995}
+    \end{subfigure}
+    \caption{Verificación del \texttt{AD uniform} contra la teoría unidmensional de momento (izquierda) y líneas de corriente aguas abajo, presentados en \cite{sorensen1995}}
+    \label{fig:cap3-sorensen1995}
 \end{figure}
+
 
 Entre los siguientes grandes hitos en la modelación de turbinas por medio de AD se puede destacar la tesis de Mikkelsen~\cite{mikkelsenThesis2003}, en la que se reformulan tanto el Actuador Discal como el Actuador Lineal en variables primitivas (presión-velocidad), resueltas mediante un solver de volúmenes finitos con interpolación de Rhie-Chow, formulación que sería adoptada en gran parte de los trabajos posteriores. Este trabajo además compara funciones de suavizado gaussianas 1D y 3D para el AD, mostrando el problema que surge al distribuir la carga más allá del borde del disco.
 
@@ -25,8 +39,41 @@ Hacia el final de la década el foco se pone en la interacción del AD con la tu
 
 Uno de los principales problemas del AD \texttt{airfoil} es la necesidad de contar con los datos de los perfiles alares que componen las aspas, los cuales casi nunca son otorgados por los fabricantes de turbinas. En 2015 van der Laan et al.~\cite{vanderlaan2015} desarrollaron un modelo que se basa en un proceso de calibración a partir del AD \texttt{airfoil}, para luego recurrir a una tabla con valores de fuerzas y velocidad de referencia en función de la velocidad promedio incidente sobre el disco. Este modelo se denomina AD \texttt{numeric} y permite estimar la distribución de fuerzas en una turbina desconocida partiendo de una conocida, como la NREL 5MW. Por otra parte, en 2019 Navarro Diaz et al.~\cite{navarrodiaz2019} propusieron un nuevo actuador también con un proceso previo de calibración, dando lugar al AD \texttt{adaptive}. El proceso de calibración se realiza con el AD \texttt{uniform} en lugar del \texttt{airfoil}, y presenta una gran capacidad de adaptarse frente a flujo no uniforme sobre el disco. En 2020 Sørensen et al.~\cite{sorensen2020} propusieron un actuador capaz de responder a flujo no uniforme sin necesidad de un proceso de calibración ni de información de los perfiles alares 2D de las aspas, mediante el cálculo analítico de la velocidad de referencia y de las fuerzas a aplicar sobre el fluido, denominado AD \texttt{analytic}. Un avance reciente dentro de estos actuadores es el trabajo de Navarro Diaz et al.~\cite{navarrodiaz2023}, en el cual se realiza una comparación profunda entre las variantes \texttt{airfoil}, \texttt{adaptive} y \texttt{analytic}, además de desarrollar los últimos 2 en versión de Actuador Lineal. Por último, en 2023 Sørensen~\cite{sorensen2023} generalizó el modelo \texttt{analytic} para velocidades por encima de la velocidad nominal, donde la hipótesis fundamental del trabajo anterior no es válida, dando lugar al llamado AD \texttt{genalytic}.
 
+\subsection{Actuador Lineal}
+
+El concepto de Actuador Lineal (AL) fue introducido por primera vez en 2002 por Sørensen y Shen~\cite{sorensen2002}, donde se ubican las fuerzas aerodinámicas correspondientes a las aspas en 3 líneas rotantes a partir de datos de perfiles alares en cada posición de las aspas, siendo esta una variante \texttt{airfoil} de dicho actuador. Las fuerzas luego se distribuyen en el dominio del fluido mediante una función Gaussiana de suavizado para evitar inestabilidades numéricas y se resuelve un modelo de Navier-Stokes tridimensional, restringido un tercio del área de barrido. Poco después, Mikkelsen~\cite{mikkelsenThesis2003} implementa el AL en variables primitivas dentro del código EllipSys3D, y observa una fuerte sensibilidad de las velocidades y fuerzas sobre la pala respecto del ancho de suavizado elegido, en particular en las zonas de raíz y punta donde la carga cambia abruptamente. En esa misma tesis se compara el AL contra el AD bajo las mismas condiciones, obteniendo resultados muy similares entre ambos.
+
+
+\begin{figure}[htpb]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[height=5.5cm]{images/wtActuatorFoam/ALvalidation-sorensen2002.jpg}
+        \caption{}
+        \label{fig:cap3-validationsorensen2002}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[height=5.5cm]{images/wtActuatorFoam/ALvorticity-sorensen2002}
+        \caption{}
+        \label{fig:cap3-vorticitysorensen2002}
+    \end{subfigure}
+    \caption{Validación del \texttt{AL airfoil} contra la teoría mediciones experimentales (izquierda) y contorno de vorticidad, presentados en \cite{sorensen2002}}
+    \label{fig:cap3-sorensen2002}
+\end{figure}
+
+En los años siguientes el AL se emplea para estudiar en detalle la estructura de la estela. En los trabajos de Ivanell et al.~\cite{ivanell2007,ivanell2009} analizan la formación de los vórtices de punta y base del aspa, y su posterior degradación, mediante el análisis de la caída en el valor de circulación en una simulación de tipo DNS con $Re$ reducido, mientras que en \cite{ivanell2010} se realiza un análisis de estabilidad del vórtice de punta de pala generado a través de simulaciones LES. Por otro lado, Mikkelsen et al.~\cite{mikkelsen2007} estudian la variación de potencia en una fila de turbinas mediante AL combinado con LES a Re reducido pero considerando una entrada con flujo de velocidad con un perfil similar al flujo atmosférico aunque sin considerar turbulencia debido a los requerimientos computacionales. Este período culmina con la tesis de Troldborg~\cite{troldborgThesis2008}, quien realiza un extenso estudio de sensibilidad numérica del AL, evaluando la influencia del tamaño de dominio, el paso temporal, el esquema de discretización, la resolución de malla y el ancho de suavizado, estableciendo que este último tiene un límite inferior vinculado al tamaño de celda por razones de estabilidad numérica.
+
+La distribución de fuerzas mediante una función Gaussiana resuelve el problema de la inestabilidad numérica, pero introduce a su vez un desafío propio del AL que no está presente en el AD, ya que el ancho de dicha función determina en gran medida la calidad de la solución obtenida. Distintos autores propusieron criterios para seleccionar este parámetro. Shives y Crawford~\cite{shives2012} lo vinculan a la cuerda local de la pala en lugar de al tamaño de celda, utilizando soluciones de referencia de flujo potencial. Jha et al.~\cite{jha2014} plantean pautas generales que combinan la relación entre el ancho de suavizado, el tamaño de celda y el espaciado entre puntos actuadores, proponiendo además una forma elíptica del suavizado en función de la cuerda equivalente de la pala. Martínez Tossas, Churchfield y Meneveau~\cite{martinezTossas2017} determinan de forma teórica, a partir de la solución de flujo potencial sobre perfiles de Joukowski, un ancho óptimo cercano al 20\% de la cuerda, junto con un corrimiento óptimo del centro de la fuerza respecto del punto de cuarto de cuerda. Poco después, Churchfield et al.~\cite{churchfield2017} presentan el denominado Advanced Actuator Line, que emplea una distribución Gaussiana anisotrópica cuyo ancho varía a lo largo de la envergadura, logrando una formación más realista de los vórtices de punta y raíz sin recurrir a correcciones de pérdida de punta empíricas. Martínez Tossas y Meneveau~\cite{martinezTossas2019} desarrollan por su parte la teoría de línea sustentadora filtrada, que permite corregir la velocidad inducida cuando se utiliza un ancho de suavizado mayor al óptimo, situación habitual en simulaciones LES de malla gruesa. Finalmente, Meyer Forsting et al.~\cite{meyerforsting2019,meyerforsting2020} proponen una corrección basada en un modelo de vórtices de estela cercana, que recupera la inducción perdida por el suavizado de las fuerzas, validada contra simulaciones de línea sustentadora sin y con núcleo viscoso, junto con una versión simplificada y de menor costo computacional publicada al año siguiente.
+
+En paralelo, un conjunto de trabajos se enfoca en validar el AL frente a datos experimentales utilizando resoluciones más gruesas que las recomendadas habitualmente, con el objetivo de reducir el costo computacional en simulaciones de parques eólicos completos. Draper y Usera~\cite{draper2015} evalúan el desempeño del AL con resolución gruesa contra las campañas de túnel de viento conocidas como Blind Test. Draper, Guggeri y Usera~\cite{draper2016} extienden esta validación a condiciones de entrada con perfil de velocidad y turbulencia representativos de la capa límite atmosférica, y también contra datos de potencia del parque eólico Horns Rev. Guggeri, Draper y Usera~\cite{guggeri2017} aplican finalmente la técnica a un parque eólico real de 7.7 MW en Uruguay.
+
+Un desarrollo reciente que vincula al AL con los avances descritos previamente para el AD es el trabajo de Navarro Diaz et al.~\cite{navarrodiaz2023}, quienes establecen una analogía entre el AD y el AL para calcular localmente las fuerzas sobre la línea sin necesidad de conocer la geometría de la pala ni datos de perfil alar. De esta forma extienden al AL tanto el modelo \texttt{analytic}~\cite{sorensen2020} como el modelo \texttt{adaptive}~\cite{navarrodiaz2019}, sumándose estas dos nuevas variantes al AL \texttt{airfoil} ya existente basado en teoría de elemento de pala. Los tres enfoques se comparan entre sí para un caso de interferencia parcial de estela entre dos turbinas, considerando tanto flujo laminar uniforme como flujo turbulento representativo de la capa límite atmosférica.
 
 \section{Parámetros generales de funcionamiento}
+
+VAMOS A DEFINIR LOS PARAMETROS MAS IMPORTANTES EN LA INTRODUCCION (DISTRIBUCION DE FUERZAS GAUSSIANA, FACTOR DE PUNTA DE PALA, FACTOR DE ROOT). EL RESTO LO DEFINIMOS ACA. EL ESTADO DEL ARTE LO HACEMOS DIRECTAMENTE ACA, MIENTRAS DEFINIMOS Y CONTAMOS QUE HAY EN LA BIBLIOTECA. 
 
 \begin{itemize}
 	\item Mallado local del actuador
