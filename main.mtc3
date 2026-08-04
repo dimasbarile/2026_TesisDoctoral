@@ -24,14 +24,14 @@
 {\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.3}\texttt {numeric}}{\reset@font\mtcSSfont 24}{subsection.3.4.3}}
 {\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {3.4.3.1}Calibración}{\reset@font\mtcSSSfont 26}{subsubsection.3.4.3.1}}
 {\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.4}\texttt {adaptive}}{\reset@font\mtcSSfont 26}{subsection.3.4.4}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.5}\texttt {analytic}}{\reset@font\mtcSSfont 28}{subsection.3.4.5}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {3.4.5.1}Generalización para perfiles de velocidad no uniformes}{\reset@font\mtcSSSfont 29}{subsubsection.3.4.5.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.6}\texttt {genanalytic}}{\reset@font\mtcSSfont 32}{subsection.3.4.6}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.7}Tabla comparativa}{\reset@font\mtcSSfont 34}{subsection.3.4.7}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.5}Verificación}{\reset@font\mtcSfont 35}{section.3.5}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.6}Análisis de Escalabilidad}{\reset@font\mtcSfont 38}{section.3.6}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.7}Validacion}{\reset@font\mtcSfont 38}{section.3.7}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.8}Caso de Aplicación: Análisis de rotación de la estela lejana en contexto de ASL}{\reset@font\mtcSfont 38}{section.3.8}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.8.1}Configuración numérica}{\reset@font\mtcSSfont 38}{subsection.3.8.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.8.2}Corrimiento del centro de la estela}{\reset@font\mtcSSfont 40}{subsection.3.8.2}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.9}Conclusiones del Capítulo}{\reset@font\mtcSfont 44}{section.3.9}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.5}\texttt {analytic}}{\reset@font\mtcSSfont 27}{subsection.3.4.5}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {3.4.5.1}Generalización para perfiles de velocidad no uniformes}{\reset@font\mtcSSSfont 28}{subsubsection.3.4.5.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.6}\texttt {genanalytic}}{\reset@font\mtcSSfont 31}{subsection.3.4.6}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.7}Tabla comparativa}{\reset@font\mtcSSfont 33}{subsection.3.4.7}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.5}Verificación}{\reset@font\mtcSfont 34}{section.3.5}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.6}Análisis de Escalabilidad}{\reset@font\mtcSfont 37}{section.3.6}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.7}Validacion}{\reset@font\mtcSfont 37}{section.3.7}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.8}Caso de Aplicación: Análisis de rotación de la estela lejana en contexto de ASL}{\reset@font\mtcSfont 37}{section.3.8}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.8.1}Configuración numérica}{\reset@font\mtcSSfont 37}{subsection.3.8.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.8.2}Corrimiento del centro de la estela}{\reset@font\mtcSSfont 39}{subsection.3.8.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.9}Conclusiones del Capítulo}{\reset@font\mtcSfont 43}{section.3.9}}

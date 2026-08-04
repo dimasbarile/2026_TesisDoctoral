@@ -549,39 +549,24 @@ La función específica de la variante \texttt{actuatorModel\_airfoil} es \textt
 \end{table}
 
 \subsection{\texttt{numeric}}
-El actuador \texttt{numeric} implementa el modelo de disco actuador propuesto por van der Laan et al.~\citep{vanderlaan2015}, ya presentado en la sección de estado del arte.Los autores de este modelo plantean una calibración, utilizando como base el actuador \texttt{airfoil} con los datos de otra turbina conocida, como por ejemplo la turbina NREL-5MW~\citep{jonkman2009}. Se realizan simulaciones de 1 turbina ante un flujo uniforme con una cierta velocidad en la entrada $U_\infty$, y a partir de cada simulación, se extraen $U_d$, $C_t$, $C_p$, $\Omega$ y las fuerzas normales y tangenciales en relación al radio $f_z(r)$ y $f_\theta(r)$. Se tienen entonces 2 tablas: la primera tendrá para cada velocidad aguas arriba $U_\infty$ los valores de la velocidad promedio en el disco $U_d$, los coeficientes de empuje y potencia $C_t$ y $C_p$, y la velocidad de giro $\Omega$ (ver Tabla~\ref{tab:vanderlaan_tabla1}). La segunda tabla tendrá, para cada velocidad $U_\infty$, las fuerzas normales y tangenciales para cada posición radial (ver Tabla~\ref{tab:vanderlaan_tabla2}).
+El actuador \texttt{numeric} implementa el modelo de disco actuador propuesto por van der Laan et al.~\citep{vanderlaan2015}, ya presentado en la sección de estado del arte. Los autores de este modelo plantean una calibración, utilizando como base el actuador \texttt{airfoil} con los datos de la turbina NREL-5MW~\citep{jonkman2009} (pero también se podrían utilizar otros modelos). Se realizan simulaciones de 1 turbina ante un flujo uniforme con una cierta velocidad en la entrada $U_\infty$, y a partir de cada simulación, se extraen $U_d$, $C_t$, $C_p$, $\Omega$ para confeccionar la primera tabla, y las fuerzas normales y tangenciales en relación al radio $f_z(r)$ y $f_\theta(r)$ para confeccionar la segunda. La primera de estas dos se corresponde con la misma tabla general ya presentada como método de inducción \texttt{table} en la sección de "Modelo de inducción", relacionando para cada $U_{ref}$ la velocidad promedio en el disco $U_d$, los coeficientes de empuje y potencia $C_t$ y $C_p$, y la velocidad de giro $\Omega$. La segunda se organiza en una tabla de seis columnas como la Tabla~\ref{tab:vanderlaan_tabla2}, que provee, para cada combinación de $U_{ref}$, $U_\infty$ y posición radial $r$, la velocidad local $U_{d,i}(r)$ y las fuerzas normal y tangencial por unidad de superficie $f_z(r)$ y $f_\theta(r)$. Para este actuador en particular, únicamente se utilizan las filas donde $U_\infty$ coincide con $U_{ref}$, correspondientes a la condición de flujo no perturbado, descartándose además la columna de velocidad local, tal como se detalla más adelante.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{ccccc}
+\begin{tabular}{cccccc}
 \hline
-$U_\infty$ & $U_d$ & $C_t$ & $C_p$ & $\Omega$ \\
+$U_{ref}$ & $U_\infty$ & $r$ & $U_{d,i}$ & $f_z$ & $f_\theta$ \\
 \hline
-4 & \ldots & \ldots & \ldots & \ldots \\
-\vdots & \vdots & \vdots & \vdots & \vdots \\
-25 & \ldots & \ldots & \ldots & \ldots \\
-\hline
-\end{tabular}
-\caption{Tabla 1 del actuador \texttt{numeric}.}
-\label{tab:vanderlaan_tabla1}
-\end{table}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{cccc}
-\hline
-$U_\infty$ & $r$ & $f_z$ & $f_\theta$ \\
-\hline
-4 & 0 & \ldots & \ldots \\
-4 & \ldots & \ldots & \ldots \\
-4 & $R$ & \ldots & \ldots \\
-\vdots & \vdots & \vdots & \vdots \\
-25 & 0 & \ldots & \ldots \\
-25 & \ldots & \ldots & \ldots \\
-25 & $R$ & \ldots & \ldots \\
+4 & 4 & 0 & \ldots & \ldots & \ldots \\
+4 & 4 & \ldots & \ldots & \ldots & \ldots \\
+4 & 4 & $R$ & \ldots & \ldots & \ldots \\
+\vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\
+25 & 25 & 0 & \ldots & \ldots & \ldots \\
+25 & 25 & \ldots & \ldots & \ldots & \ldots \\
+25 & 25 & $R$ & \ldots & \ldots & \ldots \\
 \hline
 \end{tabular}
-\caption{Tabla 2 del actuador \texttt{numeric}.}
+\caption{Tabla de calibración del actuador \texttt{numeric}, mostrando únicamente las filas con $U_\infty=U_{ref}$ efectivamente utilizadas por este modelo.}
 \label{tab:vanderlaan_tabla2}
 \end{table}
 
@@ -640,96 +625,20 @@ F_{z,i} = \frac{f_z(r_i)}{S_z(U_{\infty})}\, A_i \, T, \qquad F_{\theta,i} = \fr
 donde $T$ y $Q$ son el empuje y el torque totales vigentes en ese instante, calculados a partir de los coeficientes $C_t$ y $C_p$ actuales de la turbina, del mismo modo que en el actuador \texttt{uniform}. Puede verificarse que, al sumar $F_{z,i}$ sobre todos los nodos se recupera exactamente el empuje total $T$, y que al sumar $F_{\theta,i} \cdot r_i$ se recupera exactamente el torque total $Q$, sin necesidad de recurrir a coeficientes reescalados: la forma tabulada se normaliza para sumar a la unidad de forma discreta sobre la propia malla del actuador, y luego se escala directamente por el empuje y el torque físicos correspondientes al punto de operación actual.
 
 \subsubsection{Calibración}
-Tanto \texttt{numeric} como \texttt{adaptive} requieren de una tabla de calibración previa, construida a partir de simulaciones auxiliares. Para esto, la biblioteca ofrece un modo de \texttt{calibration}, activable en cualquier actuador mediante el parámetro homónimo, que permite imponer manualmente $U_{ref}$, y opcionalmente $U_\infty$, $C_p$, $C_t$, $\omega$ y el ángulo de pitch, salteando por completo el cálculo del modelo de inducción. Habitualmente se utiliza en conjunto con el actuador \texttt{airfoil}, ya que provee un perfil de fuerzas realista basado en la geometría real de la turbina, aunque en principio puede calibrarse con cualquier otra variante.
-El procedimiento consiste en correr una serie de simulaciones auxiliares, imponiendo en cada una un valor de $U_{ref}$ y de $U_\infty$, y activando \texttt{saveNodeForces} para registrar la posición radial y las fuerzas $f_z(r)$ y $f_\theta(r)$ obtenidas en cada nodo. Repitiendo este procedimiento para distintas combinaciones de $U_{ref}$ y $U_\infty$ se compila la tabla de seis columnas mencionada anteriormente, que luego se provee a la biblioteca mediante el parámetro \texttt{forcesRadialDistribution}.
+Tanto \texttt{numeric} como \texttt{adaptive} requieren de una tabla de calibración previa, construida a partir de simulaciones auxiliares. Para esto, la biblioteca ofrece un modo de \texttt{calibration}, activable en cualquier actuador mediante el parámetro homónimo, que permite imponer manualmente $U_{ref}$, y opcionalmente, $C_p$, $C_t$, $\omega$ y el ángulo de pitch, salteando por completo el cálculo del modelo de inducción. Esta metodología se puede utilizar en conjunto con el actuador \texttt{airfoil}, ya que provee un perfil de fuerzas realista basado en la geometría real de la turbina, pero también puede utilizarse con cualquier otra variante, como el \texttt{uniform}. El procedimiento consiste en correr una serie de simulaciones auxiliares, imponiendo en cada una un valor de $U_{ref}$ y de $U_\infty$, y activando \texttt{saveNodeForces} para registrar la posición radial y las fuerzas $f_z(r)$ y $f_\theta(r)$ obtenidas en cada nodo. Repitiendo este procedimiento para distintas combinaciones de $U_{ref}$ y $U_\infty$ se compila la tabla de seis columnas mencionada anteriormente, que luego se provee a la biblioteca mediante el parámetro \texttt{forcesRadialDistribution}.
 
 A diferencia de las variantes anteriores, \texttt{actuatorModel\_numeric} no define funciones auxiliares propias, concentrando toda su lógica específica en \texttt{init()} y en \texttt{applyForce()}. La mayor parte del trabajo específico de este modelo se realiza una única vez, en \texttt{init()}, tal como se describió anteriormente. En \texttt{applyForce()}, ejecutada en cada paso temporal, solo resta interpolar entre los dos valores de $U_{ref}$ de la tabla que rodean al $U_{ref}$ actual de la turbina, y escalar el resultado por el empuje y el torque totales vigentes en ese instante.
 
 \subsection{\texttt{adaptive}}
+El actuador \texttt{adaptive} implementa el modelo de disco actuador propuesto por Navarro Díaz et al.~\citep{navarrodiaz2019}, ya presentado en la sección de estado del arte.
 
-El Actuador Discal Numérico de Navarro Díaz fue propuesto por Navarro Diaz et al.~\cite{navarrodiaz2019} en 2019. Se plantea una calibración utilizando como base el Actuador Discal Uniforme, el cual requiere de información acotada de la turbina a simular. Se realizan 2 tipos de simulaciones, en primer lugar se simula para una serie de velocidades de entrada $U_\infty$ con velocidad de referencia $U_{ref}$ igual. La velocidad de referencia es la velocidad que se utiliza como velocidad de configuración dentro del Actuador Discal Uniforme para determinar los coeficientes de empuje $C_t$ y potencia $C_p$, y la velocidad de giro. Se obtiene entonces, para cada velocidad de referencia, la velocidad promedio sobre el disco $U_d$, los coeficientes de empuje $C_t$ y potencia $C_p$, y la velocidad de giro $\omega$, y se conforma una tabla como la Tabla~\ref{tab:navarrodiaz_tabla1}.
+La calibración de este actuador se apoya en dos tablas. La primera es la misma tabla general que ya se describió como método de inducción \texttt{table} en la sección correspondiente, relacionando para cada $U_{ref}$ la velocidad promedio en el disco $U_d$, los coeficientes de empuje y potencia $C_t$ y $C_p$, y la velocidad de giro $\omega$. La segunda tabla comparte el mismo formato de seis columnas ya presentado para el actuador \texttt{numeric} ($U_{ref}$, $U_\infty$, $r$, $U_{d,i}(r)$, $f_z(r)$, $f_\theta(r)$), aunque a diferencia de aquel, aquí se conservan todas las combinaciones de $U_{ref}$ y $U_\infty$ disponibles en la calibración, en lugar de quedarse únicamente con la condición de flujo no perturbado. Esto permite capturar cómo varían las fuerzas $f_z(r)$ y $f_\theta(r)$ no solo con la posición radial y con $U_{ref}$, sino también con la velocidad local efectivamente sentida en cada nodo, que depende de $U_\infty$.
 
-\begin{table}[h]
-\centering
-\begin{tabular}{cccccc}
-\hline
-$U_{ref}$ & $U_\infty$ & $U_d$ & $C_t$ & $C_p$ & $\Omega$ \\
-\hline
-4 & 4 & \ldots & \ldots & \ldots & \ldots \\
-\vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\
-25 & 25 & \ldots & \ldots & \ldots & \ldots \\
-\hline
-\end{tabular}
-\caption{Tabla 1 del Actuador Discal Numérico de Navarro Díaz.}
-\label{tab:navarrodiaz_tabla1}
-\end{table}
+Durante la inicialización, en \texttt{init()}, esta tabla se reinterpola linealmente sobre las posiciones radiales propias de la malla de nodos del actuador, de la misma manera que en \texttt{numeric}, conservando en este caso las tres dimensiones de variación (${U_{ref}}$, ${U_\infty}$, $r$). El procedimiento de calibración necesario para construir esta tabla es análogo al ya descripto para \texttt{numeric}, con la diferencia de que aquí se deben repetir las simulaciones auxiliares variando también $U_\infty$ para cada $U_{ref}$ de interés, en lugar de una única simulación por cada uno.
 
-Por otro lado, para la segunda tabla, se simula una serie de velocidades de entrada $U_\infty$ pero variando la velocidad de referencia del actuador $U_{ref}$ para cada velocidad de entrada. De aquí se obtienen, para cada combinación de velocidad de entrada y de velocidad de referencia, y para cada posición radial, la velocidad local, la fuerza normal y la fuerza tangencial. Se conforma entonces una tabla como la Tabla~\ref{tab:navarrodiaz_tabla2}.
+La función específica de la variante \texttt{actuatorModel\_adaptive} es \texttt{posInTableUdi()}, que busca, dentro de la tabla de calibración, los dos valores de velocidad local tabulados que rodean a la velocidad local axial sentida por un nodo determinado, para un valor de $U_{ref}$ y una posición radial dados. En \texttt{applyForce()}, ejecutada en cada paso temporal, esto se traduce en una interpolación anidada en dos niveles: primero se interpola en la dimensión de velocidad local, llamando a \texttt{posInTableUdi()} para cada uno de los dos valores de $U_{ref}$ tabulados que rodean al $U_{ref}$ actual de la turbina, y luego se interpola entre ambos resultados según dicho $U_{ref}$. La fuerza en cada nodo se obtiene multiplicando directamente el valor interpolado por el área asignada al nodo, sin ningún factor de normalización adicional, a diferencia de \texttt{numeric}, que sí reescala su resultado por el empuje y el torque totales vigentes. Esto es posible porque la tabla de \texttt{adaptive}, al estar indexada también por la velocidad local sentida en cada nodo, ya captura con suficiente precisión la condición de flujo particular de ese nodo, sin requerir una corrección global de consistencia.
 
-\begin{table}[h]
-\centering
-\begin{tabular}{cccccc}
-\hline
-$U_{ref}$ & $U_\infty$ & $r$ & $U_{d,r}$ & $f_z$ & $f_\theta$ \\
-\hline
-4 & 4 & 0 & \ldots & \ldots & \ldots \\
-4 & 4 & \ldots & \ldots & \ldots & \ldots \\
-4 & 4 & $R$ & \ldots & \ldots & \ldots \\
-\vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\
-4 & 25 & 0 & \ldots & \ldots & \ldots \\
-4 & 25 & \ldots & \ldots & \ldots & \ldots \\
-4 & 25 & $R$ & \ldots & \ldots & \ldots \\
-\vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\
-25 & 4 & 0 & \ldots & \ldots & \ldots \\
-25 & 4 & \ldots & \ldots & \ldots & \ldots \\
-25 & 4 & $R$ & \ldots & \ldots & \ldots \\
-\vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\
-25 & 25 & 0 & \ldots & \ldots & \ldots \\
-25 & 25 & \ldots & \ldots & \ldots & \ldots \\
-25 & 25 & $R$ & \ldots & \ldots & \ldots \\
-\hline
-\end{tabular}
-\caption{Tabla 2 del Actuador Discal Numérico de Navarro Díaz.}
-\label{tab:navarrodiaz_tabla2}
-\end{table}
-
-Hecha la calibración, el funcionamiento del Actuador es el siguiente:
-
-\begin{enumerate}
-\item Sensar la velocidad promedio en el disco $U_d$.
-\item Obtener de la Tabla~\ref{tab:navarrodiaz_tabla1} la velocidad de referencia, los coeficientes de empuje y potencia, y la velocidad de giro.
-\item Luego en cada nodo, se ingresa a la Tabla~\ref{tab:navarrodiaz_tabla2} con la velocidad de referencia, la velocidad local del nodo y el radio del mismo, y se obtiene la fuerza normal $f_z$ y la fuerza tangencial $f_\theta$ a aplicar en el nodo.
-\item Aplicar las fuerzas obtenidas sobre el fluido.
-\end{enumerate}
-
-% ---- Agregar al final de \subsection{Actuador Discal Numérico de Navarro Diaz} ----
-
-La implementación del Actuador Discal Numérico de Navarro Diaz utiliza 2 tablas anexas, la Tabla~\ref{tab:navarrodiaz_tabla1} y la Tabla~\ref{tab:navarrodiaz_tabla2} ya presentadas, y guarda mucha similitud con la implementación del Actuador Discal Numérico de van der Laan. El flujo de trabajo, esquematizado en la Figura~\ref{fig:impl_navarrodiaz}, se describe a continuación:
-
-\begin{enumerate}
-\item Inicialización de la simulación.
-\item Cálculo de la velocidad promedio sobre el actuador $U_d$ (loop en celdas para el cálculo de pesos según la distancia al disco y el volumen total del disco, y loop en celdas para la suma de la velocidad sensada, pesando con la distancia al disco y el volumen total).
-\item Loop en nodos para el cálculo de la posición y la velocidad de cada nodo, guardando esta última en una lista.
-\item Ingreso a la Tabla~\ref{tab:navarrodiaz_tabla1} con $U_d$, para obtener la velocidad de referencia $U_{ref}$, la velocidad de giro $\omega$, y los coeficientes de empuje y potencia $C_t$ y $C_p$.
-\item Loop sobre los nodos, realizando para cada uno:
-\begin{enumerate}
-\item Ingreso a la Tabla~\ref{tab:navarrodiaz_tabla2} con la velocidad promedio en el nodo, la velocidad de referencia y el radio, para obtener el valor de las fuerzas en el nodo.
-\item Loop en celdas para calcular los pesos según la distancia al nodo.
-\item Loop sobre celdas para aplicar las fuerzas.
-\end{enumerate}
-\item OpenFOAM resuelve el campo de velocidades.
-\item Si se converge en la solución se termina la simulación, si no, se vuelve al paso 2.
-\end{enumerate}
-
-\begin{figure}[h]
-\centering
-%\includegraphics[width=0.9\textwidth]{}
-\caption{Flujo de trabajo de implementación del Actuador Discal Numérico de Navarro Diaz.}
-\label{fig:impl_navarrodiaz}
-\end{figure}
-
-La función específica de la variante \texttt{actuatorModel\_adaptive} es \texttt{posInTableUdi()}, que busca, dentro de la tabla de calibración, los dos valores de velocidad local tabulados que rodean a la velocidad local axial sentida por un nodo determinado, para un valor de $U_{ref}$ y una posición radial dados. A diferencia de \texttt{numeric}, cuya tabla de calibración depende únicamente del radio y de $U_{ref}$, la tabla de \texttt{adaptive} incorpora una dimensión adicional correspondiente a la velocidad local sentida en cada nodo, lo cual permite que la fuerza aplicada responda a la condición de flujo particular de cada nodo y no solo a una única velocidad de referencia global de la turbina.
-En \texttt{applyForce()}, ejecutada en cada paso temporal, esto se traduce en una interpolación anidada en dos niveles: primero se interpola en la dimensión de velocidad local, llamando a \texttt{posInTableUdi()} para cada uno de los dos valores de $U_{ref}$ tabulados que rodean al $U_{ref}$ actual de la turbina, y luego se interpola entre ambos resultados según dicho $U_{ref}$. Es esta doble interpolación, y en particular su dependencia de la velocidad local de cada nodo, la que constituye la principal diferencia respecto de \texttt{numeric} y la que le otorga a \texttt{adaptive} su capacidad de adaptarse a perfiles de velocidad no uniformes sobre el disco.
+Al igual que en \texttt{numeric}, los factores de corrección de punta y de raíz no se aplican en este actuador, independientemente de cómo se los configure en el archivo \texttt{fvOptions}, ya que \texttt{applyForce()} no llama en ningún momento a las funciones correspondientes de la clase base.
 
 \subsection{\texttt{analytic}}
 
