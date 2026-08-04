@@ -91,6 +91,13 @@ gaussiana
 
 Concepto de Inducción, factor a.
 
+\subsection{Incorporación de los términos fuente a la ecuación de momento \Large Definir si va a Marco Teórico o no}
+El mecanismo de \texttt{fvOptions} incorpora los términos fuente de los actuadores como contribuciones explícitas a la ecuación de cantidad de movimiento discretizada, de la forma
+\begin{equation}
+    \frac{\partial (\rho \mathbf{U})}{\partial t} + \nabla \cdot (\rho \mathbf{U} \mathbf{U}) - \nabla \cdot (\mu_{eff} \nabla \mathbf{U}) = -\nabla p + \mathbf{S}_{u}
+\end{equation}
+donde $\mathbf{S}_{u}$ representa el término fuente incorporado por el actuador. En la implementación de \texttt{wtActuatorSource}, este término se incorpora directamente sobre el vector independiente de la matriz discretizada (\texttt{eqn.source()}), y no sobre sus coeficientes, lo cual constituye una fuente explícita, es decir, una fuente cuyo valor se calcula a partir del campo de velocidad del paso de tiempo anterior y no depende de las incógnitas que el solver está resolviendo en la iteración actual.
+
 \section{Técnicas de Análisis de Resultados}
 
 \subsection{Descomposición Ortogonal Propia (POD)}

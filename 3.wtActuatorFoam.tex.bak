@@ -74,7 +74,7 @@ En paralelo, un conjunto de trabajos se enfoca en validar el AL frente a datos e
 
 Un desarrollo reciente que vincula al AL con los avances descritos previamente para el AD es el trabajo de Navarro Diaz et al.~\cite{navarrodiaz2023}, quienes establecen una analogía entre el AD y el AL para calcular localmente las fuerzas sobre la línea sin necesidad de conocer la geometría de la pala ni datos de perfil alar. De esta forma extienden al AL tanto el modelo \texttt{analytic}~\cite{sorensen2020} como el modelo \texttt{adaptive}~\cite{navarrodiaz2019}, sumándose estas dos nuevas variantes al AL \texttt{airfoil} ya existente basado en teoría de elemento de pala. Los tres enfoques se comparan entre sí para un caso de interferencia parcial de estela entre dos turbinas, considerando tanto flujo laminar uniforme como flujo turbulento representativo de la capa límite atmosférica.
 
-\cleardoublepage
+\clearpage
 
 
 
@@ -146,20 +146,13 @@ La ejecución de cada actuador se organiza en dos etapas claramente diferenciada
 La etapa de inicialización se ejecuta una única vez, en el constructor de \texttt{wtActuatorSource}, al comienzo de la simulación. En ella se leen los parámetros geométricos y de configuración desde el archivo \texttt{fvOptions}, se construye la lista de nodos del actuador según el tipo de mallado seleccionado, se instancia la variante de \texttt{actuatorModel} correspondiente mediante su mecanismo de selección en tiempo de ejecución, y se inicializan los archivos de salida.
 La etapa de cálculo por paso temporal se ejecuta en cada iteración del solver, a través de la función \texttt{addSup()}, que es la función que OpenFOAM invoca sobre cada \texttt{fvOption} activa para incorporar su término fuente a la ecuación de cantidad de movimiento. Esta función delega el cálculo completo en \texttt{addActuatorForce()}, que actualiza, en caso de corresponder, la orientación y rotación del actuador, recalcula la posición de los nodos, estima la velocidad promedio incidente sobre el disco, determina la velocidad de referencia de la turbina mediante el modelo de inducción seleccionado, e invoca finalmente a la función \texttt{applyForce()} de la variante de \texttt{actuatorModel} activa, encargada del cálculo de la fuerza en cada nodo y de su distribución sobre las celdas del dominio.
 
-\subsection{Incorporación de los términos fuente a la ecuación de momento \Large Definir si va a Marco Teórico o no}
-El mecanismo de \texttt{fvOptions} incorpora los términos fuente de los actuadores como contribuciones explícitas a la ecuación de cantidad de movimiento discretizada, de la forma
-\begin{equation}
-    \frac{\partial (\rho \mathbf{U})}{\partial t} + \nabla \cdot (\rho \mathbf{U} \mathbf{U}) - \nabla \cdot (\mu_{eff} \nabla \mathbf{U}) = -\nabla p + \mathbf{S}_{u}
-\end{equation}
-donde $\mathbf{S}_{u}$ representa el término fuente incorporado por el actuador. En la implementación de \texttt{wtActuatorSource}, este término se incorpora directamente sobre el vector independiente de la matriz discretizada (\texttt{eqn.source()}), y no sobre sus coeficientes, lo cual constituye una fuente explícita, es decir, una fuente cuyo valor se calcula a partir del campo de velocidad del paso de tiempo anterior y no depende de las incógnitas que el solver está resolviendo en la iteración actual.
-
-
 \section{Parámetros generales de funcionamiento}
 \label{sec:parametrosGenerales}
 
 La naturaleza modular de la biblioteca se evidencia en la amplia variedad de configuraciones disponibles, que incluyen el mallado del actuador, el método utilizado para el cálculo de la inducción, los factores de corrección de punta y de raíz, el método de promediado de la velocidad del actuador, el método utilizado para distribuir las fuerzas aerodinámicas sobre la malla de CFD y los niveles de guardado disponibles en la biblioteca.
 
 \subsection{Mallado local del actuador \checkmark}
+\label{sec:mallado_local}
 La biblioteca genera mallas de actuador independientes de la malla del problema de CFD, como se comentó previamente. Para el formato AD, la biblioteca admite dos estrategias de distribución de nodos, en anillos concéntricos a distancias radiales fijas con un número variable de nodos en cada anillo, o en líneas radiales fijas y estáticas, en cuyo caso el disco completo se representa mediante múltiples segmentos radiales distribuidos a lo largo de toda su circunferencia. Cada nodo, donde se calculan las fuerzas según el modelo seleccionado, tiene asignada un área elemental sobre la cual se integran las fuerzas distribuidas, las cuales luego se suavizan sobre las celdas de la malla de CFD para evitar inestabilidades. La distribución en anillos resulta considerablemente más eficiente en cuanto a la cantidad de nodos necesaria: frente a la distribución en líneas, requiere aproximadamente la mitad de nodos para lograr una misma distancia máxima entre nodos vecinos, ya que concentra los nodos donde realmente hace falta resolución (a mayor radio, donde el perímetro de cada anillo es mayor) en lugar de mantener una cantidad de nodos fija en toda línea independientemente de su radio. Esta eficiencia se traduce directamente en un menor costo computacional, dado que reduce la cantidad de puntos en los que es necesario calcular fuerzas e interpolar velocidades en cada paso de tiempo, resultando especialmente ventajosa cerca del centro del disco, donde la distribución en líneas concentra una cantidad de nodos innecesaria para el área que efectivamente representan. Pese a esta ventaja, representar el disco actuador mediante múltiples líneas estáticas es una técnica adoptada en la bibliografía \citep{navarrodiaz2023,martinezTossas2012,nathan2015}, a costa de la mayor cantidad de nodos y el consecuente costo computacional adicional mencionado anteriormente.
 Para el formato AL, en cambio, la cantidad de líneas se hace coincidir con la cantidad de palas de la turbina, y dichas líneas rotan solidariamente con el rotor. A modo de ejemplo, se muestran una distribución en anillos de 403 nodos, una distribución en líneas equivalente de 768 nodos, y una malla de AL de 3 líneas con 48 nodos para un rotor de 3 palas (Figura~\ref{fig:bb_mallado}). Adicionalmente, la biblioteca permite tanto mallas de actuador fijas como mallas auto orientables, y mallas rotantes con velocidad angular fija o variable según la configuración indicada para la turbina.
 \begin{figure}[htb]
@@ -413,30 +406,58 @@ Los parámetros correspondientes se configuran directamente en el archivo \textt
 \end{verbatim}
 \end{scriptsize}
 
-\subsection{Aplicación de factores de corrección}
+\section{Modelos de actuador implementados en \texttt{wtActuatorFoam}}
+De los actuadores mencionados en el estado del arte se seleccionaron los vigentes al día de la fecha para incluir en la biblioteca desarrollada. Todas las variantes incluidas se encuentran tanto en formato AD como AL, al igual que se desarrolló en \citep{navarrodiaz2023}. A diferencia de lo que podría suponerse, la distinción entre formato AD y formato AL no se implementa dentro de la clase \texttt{actuatorModel} ni de sus variantes derivadas, sino en la propia clase \texttt{wtActuatorSource}, mediante la disposición y rotación de la malla de nodos ya descriptas en la sección~\ref{sec:mallado_local} (anillos fijos para AD, o líneas rotantes para AL). De este modo, una misma variante de \texttt{actuatorModel} puede emplearse indistintamente en formato AD o AL, sin requerir ninguna modificación en su implementación. Lo que sí resulta común a todas las variantes de \texttt{actuatorModel} es que el cálculo de la fuerza aplicada en cada nodo se plantea siempre en términos de una densidad de fuerza por unidad de área, multiplicada luego por el área particular asignada a cada nodo. Es precisamente en esa área de nodo, y no en el cálculo de la densidad de fuerza en sí, donde queda encapsulada la diferencia entre los formatos AD y AL, tal como se explicó en la sección~\ref{sec:mallado_local}.
 
-Para poder aplicar factores de corrección de raíz y de punta, debemos garantizar que la suma de las fuerzas aplicadas se mantenga en el valor del empuje calculado en la ecuación~\ref{eq:AD_uniforme_thrust} y la potencia de la ecuación~\ref{eq:AD_uniforme_power}. Para hacer esto se incorporan factores de escala, los cuales permiten que se sigan cumpliendo las ecuaciones mencionadas.
+\subsection{\texttt{uniform} \checkmark}
+El actuador \texttt{uniform} tiene un planteo simple, en el cual las fuerzas se consideran distribuidas de forma uniforme sobre la superficie del actuador discal. Para poder calcular estas fuerzas primero se deben calcular el empuje (thrust, $T$), la potencia (power, $P$) y el torque ($Q$):
+\begin{equation}
+T = \frac{1}{2}\rho A_D U_{ref}^2 C_t
+\label{eq:AD_uniforme_thrust}
+\end{equation}
+\begin{equation}
+P = \frac{1}{2}\rho A_D U_{ref}^3 C_p
+\label{eq:AD_uniforme_power}
+\end{equation}
+\begin{equation}
+Q = \frac{P}{\Omega}
+\label{eq:AD_uniforme_torque}
+\end{equation}
+Luego las fuerzas normales y tangenciales por unidad de superficie vienen dadas por:
+\begin{equation}
+f_{z,unif} = \frac{T}{A_D}
+\label{eq:AD_uniforme_fz}
+\end{equation}
+\begin{equation}
+f_{\theta,unif} = \frac{Q}{r \, A_D}
+\label{eq:AD_uniforme_ftheta}
+\end{equation}
+Podemos observar en las ecuaciones anteriores que debemos saber de antemano la velocidad de referencia $U_{ref}$, los coeficientes de empuje y de potencia $C_t$ y $C_p$ en función de esta velocidad, y la velocidad de giro $\Omega$. Esta información puede ser calculada por la biblioteca mediante el modelo de inducción configurado, o bien informada directamente por el usuario activando el modo \texttt{calibration}, que permite imponer manualmente estos valores sin pasar por dicho cálculo. Este último modo es, por ejemplo, el que se utiliza para construir las tablas de calibración que requieren los actuadores \texttt{numeric} y \texttt{adaptive}.
 
-La forma de aplicar estos factores de escala es sumar en cada uno de los nodos la fuerza normal considerando la superficie asignada a dicho nodo con y sin los factores de corrección de raíz y de punta, y así obtener la suma de las fuerzas con y sin factores de corrección. Luego el factor de corrección será el cociente entre la suma sin corrección y la suma con corrección, dando un valor mayor a 1.
+El flujo de trabajo del actuador \texttt{uniform}, se describe a continuación:
+\begin{enumerate}
+\item Obtener de \texttt{fvOptions} la velocidad de referencia $U_{ref}$, el coeficiente de empuje $C_t$, el coeficiente de potencia $C_p$ y la velocidad de giro $\Omega$.
+\item Calcular el empuje, la potencia y el torque total del actuador (ecuaciones~\ref{eq:AD_uniforme_thrust}-\ref{eq:AD_uniforme_torque}).
+\item A partir de estos, calcular la densidad de fuerza normal y tangencial uniforme sobre el disco (ecuaciones~\ref{eq:AD_uniforme_fz}-\ref{eq:AD_uniforme_ftheta}).
+\item Si no se configuró ningún factor de corrección de punta ni de raíz, recorrer una única vez la lista de nodos, calculando en cada uno la fuerza normal y tangencial como el producto de la densidad de fuerza uniforme por el área del nodo, y distribuyendo dicha fuerza sobre las celdas de la malla de CFD.
+\item Si se configuró alguno de los dos factores de corrección, recorrer la lista de nodos dos veces. En el primer recorrido se calcula, para cada nodo, el factor de punta y de raíz correspondiente, y se acumula la suma de fuerzas resultante de aplicarlos, necesaria para obtener el factor de escala descripto más abajo. En el segundo recorrido se recalculan los factores de punta y de raíz de cada nodo, se calcula la fuerza final aplicando dichos factores junto con el factor de escala, y se distribuye sobre las celdas de la malla de CFD.
+\item OpenFOAM resuelve el campo de velocidades y se avanza a la siguiente iteración.
+\end{enumerate}
 
-Entonces, ejemplificando para el caso de las fuerzas normales, tenemos:
+Las funciones específicas de la variante \texttt{actuatorModel\_uniform} son \texttt{applyForce\_tiproot()} y \texttt{applyForce\_no\_tiproot()}, seleccionadas internamente por \texttt{applyForce()} según se hayan configurado o no factores de corrección de punta y de raíz. Ambas funciones calculan la densidad de fuerza normal y tangencial a partir del empuje y torque totales de la turbina, y la escalan según el área asignada a cada nodo.
 
+\subsubsection{Aplicación de factores de corrección de punta y de raíz \checkmark}
+Para poder aplicar los factores de corrección de punta y de raíz ya presentados anteriormente en este capítulo, debemos garantizar que la suma de las fuerzas aplicadas se mantenga en el valor del empuje calculado en la ecuación~\ref{eq:AD_uniforme_thrust} y la potencia de la ecuación~\ref{eq:AD_uniforme_power}, ya que dichos factores reducen la fuerza local cerca de la punta y de la raíz de la pala. Para hacer esto se incorpora un factor de escala, el cual permite que se sigan cumpliendo las ecuaciones mencionadas. La forma de aplicar este factor de escala es sumar en cada uno de los nodos la fuerza normal considerando la superficie asignada a dicho nodo, con y sin los factores de corrección de punta y de raíz, y así obtener la suma de las fuerzas con y sin corrección. Luego el factor de escala será el cociente entre la suma sin corrección y la suma con corrección, dando un valor mayor a 1. Ejemplificando para el caso de las fuerzas normales:
 \begin{equation}
 F_{scale,n} = \frac{\displaystyle\sum_{nodes} f_{z,unif,i} A_i}{\displaystyle\sum_{nodes} F_{tip,i} F_{root,i} f_{z,unif,i} A_i}
 \label{eq:AD_uniforme_fscale}
 \end{equation}
-
-siendo $F_{scale,n}$ el factor de escala para las fuerzas normales, $f_{z,unif,i}$ la fuerza de superficie normal para el nodo $i$, $A_i$ la superficie asignada al nodo $i$, $F_{tip,i}$ el factor de punta de pala para el nodo $i$ y $F_{root,i}$ el factor de raíz para el nodo $i$.
-
-Finalmente, las fuerzas en cada nodo vendrán calculadas por:
-
+siendo $F_{scale,n}$ el factor de escala para las fuerzas normales, $f_{z,unif,i}$ la fuerza de superficie normal para el nodo $i$, $A_i$ la superficie asignada al nodo $i$, $F_{tip,i}$ el factor de punta de pala para el nodo $i$ y $F_{root,i}$ el factor de raíz para el nodo $i$. Finalmente, las fuerzas en cada nodo vendrán calculadas por:
 \begin{equation}
 f_{z,i} = F_{scale,n} F_{tip,i} F_{root,i} f_{z,unif,i} A_i
 \label{eq:AD_uniforme_fzi}
 \end{equation}
-
 En la Figura~\ref{fig:AD_uniforme_correccion} podemos observar cómo se modifica la distribución de fuerzas con las correcciones mencionadas, considerando factor de raíz de Glauert y factor de punta de Prandtl, frente a la simple distribución normal que se plantea originalmente en este actuador.
-
 \begin{figure}[h]
 \centering
 \includegraphics[height=0.4\textwidth]{images/wtActuatorFoam/teichFactoresDeCorreccion.jpg}
@@ -444,118 +465,36 @@ En la Figura~\ref{fig:AD_uniforme_correccion} podemos observar cómo se modifica
 \label{fig:AD_uniforme_correccion}
 \end{figure}
 
-
-\cleardoublepage
-
-
-\section{Modelos de actuador implementados en \texttt{wtActuatorFoam}}
-De los actuadores mencionados en el estado del arte se seleccionaron los vigentes al día de la fecha para incluir en la biblioteca desarrollada. Todas las variantes incluidas se encuentran tanto en formato AD como AL, al igual que se desarrolló en \cite{navarrodiaz2023}.
-A diferencia de lo que podría suponerse, la distinción entre formato AD y formato AL no se implementa dentro de la clase \texttt{actuatorModel} ni de sus variantes derivadas, sino en la propia clase \texttt{wtActuatorSource}, a través de la combinación de dos parámetros de configuración independientes del modelo aerodinámico seleccionado. El primero de ellos define la disposición espacial de los nodos del actuador, ya sea en anillos concéntricos distribuidos sobre toda el área del disco (formato AD) o en líneas radiales que representan palas individuales (formato AL). El segundo define si dicha disposición de nodos permanece fija o rota con una velocidad angular determinada, lo cual resulta indispensable para representar el paso periódico de las palas en el formato AL. De este modo, una misma variante de \texttt{actuatorModel} puede emplearse indistintamente en formato AD o AL, sin requerir ninguna modificación en su implementación.
-Lo que sí resulta común a todas las variantes de \texttt{actuatorModel} es que el cálculo de la fuerza aplicada en cada nodo se plantea siempre en términos de una densidad de fuerza por unidad de área, y no como una fuerza total repartida en partes iguales entre los nodos. En cada paso temporal se calcula primero la densidad de empuje y de torque correspondiente a todo el disco, dividiendo el empuje y el torque totales de la turbina por el área total del disco actuador, y luego dicha densidad se multiplica por el área particular de cada nodo para obtener la fuerza que a ese nodo le corresponde. Es en el área asignada a cada nodo, y no en el cálculo de la fuerza en sí, donde queda encapsulada la diferencia entre los formatos AD y AL.
-En el formato AD, los nodos se distribuyen en anillos concéntricos que cubren la totalidad del área del disco en todo instante, de modo que el área asignada a cada nodo corresponde a la porción completa de anillo que le corresponde según la cantidad de nodos distribuidos en dicho anillo. En el formato AL, en cambio, a cada radio existe un único nodo por línea, y el área asignada a dicho nodo corresponde únicamente a la fracción angular de ese mismo anillo que le corresponde a una sola pala, es decir, el área total del anillo dividida por la cantidad de líneas o palas representadas. En consecuencia, un nodo en formato AL recibe, en un instante dado, una fuerza sensiblemente menor que su equivalente en formato AD a igual radio, ya que su área asignada es proporcionalmente menor.
-Esta diferencia se compensa mediante la rotación de la malla de nodos, activada únicamente en el formato AL. Mientras que en el formato AD la malla de nodos permanece fija y cubre todo el disco de manera simultánea, en el formato AL la malla rota solidariamente con la turbina, de modo que, a lo largo de una revolución completa, cada línea de nodos termina barriendo la totalidad del área angular que le corresponde. De esta manera, ambos formatos aplican, en promedio temporal, la misma distribución de fuerza sobre el disco actuador, aunque el formato AD la distribuye de manera simultánea en el espacio y el formato AL la distribuye de manera secuencial en el tiempo.
-
-\subsection{\texttt{uniform}}
-
-El actuador \texttt{uniform} tiene un planteo simple, en el cual las fuerzas se consideran distribuidas de forma uniforme sobre la superficie del actuador discal. Para poder calcular estas fuerzas primero se deben calcular el empuje (thrust, $T$), la potencia (power, $P$) y el torque ($Q$).
-
+\subsection{\texttt{airfoil} \checkmark}
+El actuador \texttt{airfoil} está basado directamente en la teoría BEM planteada por Glauert~\citep{glauert1935}, combinada con CFD según lo propuesto por Sørensen y Kock~\citep{sorensen1995}. Las fuerzas de sustentación (lift) y de arrastre (drag) por unidad de longitud en la dirección radial vienen dadas por:
 \begin{equation}
-T = \frac{1}{2}\rho A_D U_{ref}^2 C_t
-\label{eq:AD_uniforme_thrust}
-\end{equation}
-
-\begin{equation}
-P = \frac{1}{2}\rho A_D U_{ref}^3 C_p
-\label{eq:AD_uniforme_power}
-\end{equation}
-
-\begin{equation}
-Q = \frac{P}{\Omega}
-\label{eq:AD_uniforme_torque}
-\end{equation}
-
-Luego las fuerzas normales y tangenciales por unidad de superficie vienen dadas por:
-
-\begin{equation}
-f_{z,unif} = \frac{T}{A_D}
-\label{eq:AD_uniforme_fz}
-\end{equation}
-
-\begin{equation}
-f_{\theta,unif} = \frac{3}{2}\frac{Q}{r A_D}
-\label{eq:AD_uniforme_ftheta}
-\end{equation}
-
-Podemos observar en las ecuaciones~\ref{eq:AD_uniforme_thrust}, \ref{eq:AD_uniforme_power} y \ref{eq:AD_uniforme_torque}, que debemos saber de antemano la velocidad de referencia $U_{ref}$, los coeficientes de empuje y de potencia $C_t$ y $C_p$ en función de esta velocidad, y la velocidad de giro $\Omega$. Según la implementación de este modelo de actuador esta información puede ser calculada o informada por el usuario de forma directa. En el caso de su implementación como actuador de calibración para actuadores numéricos, esta información es informada por el usuario para poder formar las tablas que luego regirán el comportamiento del mismo.
-
-% ---- Agregar al final de \subsection{Actuador Discal Uniforme} ----
-
-La implementación del Actuador Discal Uniforme resulta sencilla, ya que los valores de las fuerzas vienen dados directamente por la configuración realizada en el archivo \texttt{fvOptions}. El flujo de trabajo, esquematizado en la Figura~\ref{fig:impl_uniforme}, se describe a continuación:
-
-\begin{enumerate}
-\item Obtener de \texttt{fvOptions} la velocidad de referencia $U_{ref}$, el coeficiente de empuje $C_t$, el coeficiente de potencia $C_p$ y la velocidad de giro $\omega$.
-\item Calcular el empuje, la potencia y el torque total del actuador.
-\item A partir del empuje y el torque, calcular las fuerzas normales y tangenciales.
-\item Primer loop sobre los nodos: sumar las fuerzas normales y tangenciales, calcular el factor de raíz y de punta en cada nodo, y sumar las fuerzas normales y tangenciales aplicando dichos factores.
-\item Calcular los factores de escala a partir de las sumas de fuerzas sin y con correcciones.
-\item Segundo loop sobre los nodos: para cada nodo, calcular nuevamente el factor de raíz y de punta, y calcular las fuerzas normales y tangenciales aplicando tip factor, root factor y factor de escala. Dentro de este loop, para cada nodo se realiza un primer loop sobre celdas para calcular los pesos según la distancia al nodo, y un segundo loop sobre celdas para aplicar las fuerzas correspondientes.
-\item OpenFOAM resuelve el campo de velocidades y se avanza a la siguiente iteración.
-\item Si se converge en la solución se termina la simulación, si no, se vuelve al paso 2.
-\end{enumerate}
-
-\begin{figure}[h]
-\centering
-%\includegraphics[width=0.9\textwidth]{}
-\caption{Flujo de trabajo de implementación del Actuador Discal Uniforme.}
-\label{fig:impl_uniforme}
-\end{figure}
-
-Las funciones específicas de la variante \texttt{actuatorModel\_uniform} son \texttt{applyForce\_tiproot()} y \texttt{applyForce\_no\_tiproot()}, seleccionadas internamente por \texttt{applyForce()} según se hayan configurado o no factores de corrección de punta y de raíz. Ambas funciones calculan la densidad de fuerza normal y tangencial a partir del empuje y torque totales de la turbina, y la escalan según el área asignada a cada nodo, tal como se describió en el flujo de trabajo anterior.
-
-\subsection{\texttt{airfoil}}
-
-El Actuador Discal Airfoil está basado directamente en la teoría BEM planteada en Glauert~\cite{glauert1935} en 1935, combinándola con CFD. Esta combinación fue originalmente planteada en Sørensen y Myken~\cite{sorensen1992}, y luego aplicada en Sørensen y Kock~\cite{sorensen1995}. Otros ejemplos de aplicación de este modelo de actuador son Ivanell et al.~\cite{ivanell2007}, Navarro Diaz et al.~\cite{navarrodiaz2019}, Navarro Diaz et al.~\cite{navarrodiaz2023}, entre otros. En Sørensen y Kock~\cite{sorensen1995} se plantea que las fuerzas de sustentación o lift, y de arrastre o drag, por unidad en la dirección del radio, vienen dadas por:
-
-\begin{equation}
-L = \frac{1}{2}\rho W(r)^2 N_b c(r) C_L(r,\alpha) F_{tip} e_L(r)
+L = \frac{1}{2}\rho W(r)^2 N_b c(r) C_L(r,\alpha) F_{tip} F_{root} e_L(r)
 \label{eq:AD_airfoil_lift}
 \end{equation}
-
 \begin{equation}
-D = \frac{1}{2}\rho W(r)^2 N_b c(r) C_D(r,\alpha) F_{tip} e_D(r)
+D = \frac{1}{2}\rho W(r)^2 N_b c(r) C_D(r,\alpha) F_{tip} F_{root} e_D(r)
 \label{eq:AD_airfoil_drag}
 \end{equation}
-
-donde $W$ es la velocidad relativa al giro de la pala, $N_b$ es el número de palas de la turbina, $c$ es la longitud de cuerda, $C_L$ y $C_D$ son los coeficientes de lift y drag respectivamente que dependen del perfil en la posición radial $r$ y del ángulo de ataque del mismo $\alpha$ (que a su vez depende de los ángulos de twist, de pitch y de flujo local $\phi$), $e_L$ y $e_D$ son los vectores directores de lift y drag respectivamente, y $F_{tip}$ es el factor de corrección de punta de pala. Para obtener las fuerzas por unidad de área debemos dividir por el perímetro en cada posición radial, es decir $2\pi r$, entonces obtenemos:
-
+donde $W$ es la velocidad relativa al giro de la pala, $N_b$ es el número de palas de la turbina, $c$ es la longitud de cuerda, $C_L$ y $C_D$ son los coeficientes de lift y drag que dependen del perfil en la posición radial $r$ y del ángulo de ataque local $\alpha$, $e_L$ y $e_D$ son los vectores directores de lift y drag, y $F_{tip}$ y $F_{root}$ son los factores de corrección de punta y de raíz ya presentados anteriormente en este capítulo. Para obtener las fuerzas por unidad de área dividimos por el perímetro en cada posición radial, $2\pi r$:
 \begin{equation}
-f_{LIFT} = \frac{1}{2}\rho W(r)^2 N_b \frac{c(r)}{2\pi r} C_L(r) F_{tip} e_L(r)
+f_{LIFT} = \frac{1}{2}\rho W(r)^2 N_b \frac{c(r)}{2\pi r} C_L(r) F_{tip} F_{root} e_L(r)
 \label{eq:AD_airfoil_flift}
 \end{equation}
-
 \begin{equation}
-f_{DRAG} = \frac{1}{2}\rho W(r)^2 N_b \frac{c(r)}{2\pi r} C_D(r) F_{tip} e_D(r)
+f_{DRAG} = \frac{1}{2}\rho W(r)^2 N_b \frac{c(r)}{2\pi r} C_D(r) F_{tip} F_{root} e_D(r)
 \label{eq:AD_airfoil_fdrag}
 \end{equation}
-
-Luego las fuerzas normales y tangenciales que aplicamos en el sistema de referencia de coordenadas cilíndricas vienen dadas por la siguiente descomposición de las fuerzas calculadas previamente:
-
+El término $\sigma(r) = N_b c(r)/(2\pi r)$, que aparece en ambas ecuaciones, se conoce como la solidez de la turbina a ese radio, y representa la fracción de la circunferencia ocupada por las palas. Las fuerzas normales y tangenciales que se aplican sobre el fluido resultan de la siguiente descomposición:
 \begin{equation}
 f_z = f_{LIFT}\cos\phi + f_{DRAG}\sin\phi
 \label{eq:AD_airfoil_fz}
 \end{equation}
-
 \begin{equation}
 f_\theta = f_{LIFT}\sin\phi - f_{DRAG}\cos\phi
 \label{eq:AD_airfoil_ftheta}
 \end{equation}
-
-donde $\phi$ es el ángulo local de flujo.
-
-Se puede observar en las ecuaciones~\ref{eq:AD_airfoil_flift} y \ref{eq:AD_airfoil_fdrag}, que para calcular cada fuerza, se necesita saber la longitud de cuerda $c$, el coeficiente de drag $C_D$ y el coeficiente de lift $C_L$, en cada radio y para cada ángulo de ataque $\alpha$. Esta información no suele ser brindada por los fabricantes de turbinas, por lo que la principal desventaja del presente método de actuador discal reside en la necesidad de información sobre los perfiles alares en la turbina.
-
-Es usual en la bibliografía, para poder sortear el problema mencionado, utilizar turbinas de referencia como las de Jonkman et al.~\cite{jonkman2009}, Bak et al.~\cite{bak2013} o Gaertner et al.~\cite{gaertner2020}. En este trabajo utilizamos la definida por el National Renewable Energy Laboratory de Estados Unidos~\cite{jonkman2009}. Las propiedades de la turbina NREL 5MW se tabulan, dando para cada posición radial el perfil alar utilizado y su ángulo de twist, su longitud de cuerda, y los coeficientes de lift y drag en función del ángulo de ataque. La información provista por Jonkman et al.~\cite{jonkman2009} se organiza por un lado en una tabla como la Tabla~\ref{tab:AD_airfoil_perfil} de donde se obtiene, para cada radio, el perfil, su ángulo de twist y su longitud de cuerda. Luego, cada perfil tiene una tabla asociada como la Tabla~\ref{tab:AD_airfoil_polar}, donde según el ángulo de ataque local se obtiene el coeficiente de lift y el coeficiente de drag. Estas tablas son incluidas en los apéndices de Jonkman et al.~\cite{jonkman2009}.
-
+donde $\phi$ es el ángulo local de flujo. Se observa en las ecuaciones~\ref{eq:AD_airfoil_flift} y \ref{eq:AD_airfoil_fdrag} que, para calcular estas fuerzas, se necesita conocer la longitud de cuerda $c$, y los coeficientes de lift y de drag en función del radio y del ángulo de ataque local. Esta información no suele ser brindada por los fabricantes de turbinas, por lo que la principal desventaja de este modelo reside en la necesidad de contar con datos detallados de los perfiles alares de la turbina a simular.
+La biblioteca no está limitada a ninguna turbina en particular, admitiendo la incorporación de cualquier turbina para la cual se disponga de esta información. En los casos desarrollados en esta tesis se utiliza como ejemplo la turbina de referencia NREL 5MW~\citep{jonkman2009}, para la cual se armaron las tablas correspondientes según el formato que requiere la biblioteca. Dicha información se organiza en dos tablas: una primera tabla, como la Tabla~\ref{tab:AD_airfoil_perfil}, que provee para cada radio el perfil alar utilizado, su ángulo de twist y su longitud de cuerda, y una segunda tabla asociada a cada perfil, como la Tabla~\ref{tab:AD_airfoil_polar}, que provee el coeficiente de lift y de drag en función del ángulo de ataque local.
 \begin{table}[h]
 \centering
 \begin{tabular}{cccc}
@@ -569,45 +508,28 @@ Radio & Perfil & Ángulo de twist & Long. de cuerda \\
 63 & airfoil\_63 & 0 & 0.878 \\
 \hline
 \end{tabular}
-\caption{Tabla 1 de Actuador Airfoil en base a trabajo de Jonkman et al.~\cite{jonkman2009}.}
+\caption{Tabla 1 del actuador \texttt{airfoil}, con los valores correspondientes a la turbina de referencia NREL 5MW~\citep{jonkman2009}.}
 \label{tab:AD_airfoil_perfil}
 \end{table}
 
-% ---- Agregar al final de \subsection{Actuador Discal Airfoil} ----
-
-La implementación del Actuador Discal Airfoil resulta más compleja que la de los actuadores anteriores, debido a que requiere de 2 tablas anexas: la Tabla~\ref{tab:AD_airfoil_perfil}, que provee el perfil alar, el ángulo de twist y la longitud de cuerda en función del radio, y la Tabla~\ref{tab:AD_airfoil_polar}, que provee los coeficientes de lift y de drag en función del perfil y del ángulo de ataque local. Adicionalmente, se utiliza un archivo \texttt{listFvOptions} que provee, en función de la velocidad promedio sobre el disco, la velocidad de referencia, la velocidad de giro, el ángulo de pitch y los coeficientes de empuje y potencia, obtenidos mediante un proceso de calibración previo. El flujo de trabajo, esquematizado en la Figura~\ref{fig:impl_airfoil}, se describe a continuación:
-
+La implementación del actuador \texttt{airfoil} resulta más compleja que la del actuador \texttt{uniform}, debido a que requiere las dos tablas mencionadas. El flujo de trabajo se describe a continuación:
 \begin{enumerate}
-\item Cálculo de la velocidad promedio sobre el actuador $U_d$ (loop sobre celdas para el cálculo de pesos, y loop sobre celdas para la suma de velocidad).
-\item Interpolación del archivo \texttt{listFvOptions} con $U_d$, para obtener $U_{ref}$, $\omega$, $C_p$, $C_t$ y el ángulo de pitch.
-\item Loop sobre los nodos, realizando para cada uno:
+\item Calcular la velocidad promedio sobre el disco $U_d$, según lo descripto en la sección correspondiente a los métodos de medición de velocidad promedio.
+\item Obtener $U_{ref}$, $\omega$, $C_p$, $C_t$ y el ángulo de pitch mediante el modelo de inducción configurado.
+\item Recorrer la lista de nodos, realizando para cada uno:
 \begin{enumerate}
 \item Cálculo de la posición y de la velocidad del nodo.
 \item Cálculo del ángulo local de flujo $\phi$.
-\item Interpolación de la Tabla~\ref{tab:AD_airfoil_perfil} con el radio, para obtener el perfil, el ángulo de twist y la longitud de cuerda.
+\item Interpolación de la Tabla~\ref{tab:AD_airfoil_perfil} según el radio, para obtener el perfil, el ángulo de twist y la longitud de cuerda.
 \item Cálculo del ángulo local de ataque.
-\item Ingreso a la Tabla~\ref{tab:AD_airfoil_polar} con el perfil y el ángulo de ataque local, para obtener los coeficientes de drag y lift $C_D$ y $C_L$.
-\item Cálculo del tip factor y de la fuerza para el nodo.
-\item Loop sobre celdas para el cálculo de pesos según la distancia al nodo.
-\item Loop sobre celdas para la aplicación de las fuerzas.
+\item Interpolación de la Tabla~\ref{tab:AD_airfoil_polar} entre los dos perfiles adyacentes al radio del nodo, según el ángulo de ataque local, para obtener los coeficientes de lift y de drag $C_L$ y $C_D$.
+\item Cálculo del factor de punta y de raíz, y de la fuerza resultante en el nodo.
+\item Distribución de la fuerza sobre las celdas de la malla de CFD.
 \end{enumerate}
-\item OpenFOAM resuelve el campo de velocidades.
-\item Si se converge en la solución se termina la simulación, si no, se vuelve al paso 1.
+\item OpenFOAM resuelve el campo de velocidades y se avanza a la siguiente iteración.
 \end{enumerate}
 
-\begin{figure}[h]
-\centering
-%\includegraphics[width=0.9\textwidth]{}
-\caption{Flujo de trabajo de implementación del Actuador Discal Airfoil.}
-\label{fig:impl_airfoil}
-\end{figure}
-
-La función específica de la variante \texttt{actuatorModel\_airfoil} es \texttt{airfoilAnglesCoeffs()}, que calcula, para un nodo dado, la cuerda y el ángulo de twist interpolando la Tabla~\ref{tab:AD_airfoil_perfil} según el radio, obtiene el ángulo de ataque local a partir del ángulo de pitch, el ángulo de twist y el ángulo de flujo incidente, y finalmente calcula los coeficientes de lift y de drag interpolando la Tabla~\ref{tab:AD_airfoil_polar} entre los dos perfiles alares adyacentes al radio del nodo. Esta interpolación entre perfiles permite representar de forma continua una pala compuesta por distintos perfiles alares a lo largo de su envergadura, incluso cuando la transición entre uno y otro no coincide exactamente con la posición de un nodo.
-Las tablas mencionadas se cargan durante la inicialización del modelo, en la función \texttt{init()}, mediante dos clases auxiliares propias de OpenFOAM: \texttt{bladeModel}, que representa la geometría de la pala (Tabla~\ref{tab:AD_airfoil_perfil}), y \texttt{profileModelList}, que representa el conjunto de perfiles alares con sus respectivas curvas de lift y drag (Tabla~\ref{tab:AD_airfoil_polar}). El resto del cálculo, incluyendo la transformación de coordenadas, la descomposición de la velocidad relativa, y la aplicación de los factores de corrección de punta y de raíz, reutiliza las funciones comunes provistas por la clase base \texttt{actuatorModel}.
-
-\subsection{\texttt{numeric}}
-
-El Actuador Discal Numérico de van der Laan fue propuesto en 2015 por van der Laan et al.~\cite{vanderlaan2015}, basándose en lo desarrollado previamente en van der Laan~\cite{vanderlaan2014}.
+La función específica de la variante \texttt{actuatorModel\_airfoil} es \texttt{airfoilAnglesCoeffs()}, que calcula, para un nodo dado, la cuerda y el ángulo de twist interpolando la Tabla~\ref{tab:AD_airfoil_perfil} según el radio, obtiene el ángulo de ataque local a partir del ángulo de pitch, el ángulo de twist y el ángulo de flujo incidente, y finalmente calcula los coeficientes de lift y de drag interpolando la Tabla~\ref{tab:AD_airfoil_polar} entre los dos perfiles alares adyacentes al radio del nodo. Esta interpolación entre perfiles permite representar de forma continua una pala compuesta por distintos perfiles alares a lo largo de su envergadura, incluso cuando la transición entre uno y otro no coincide exactamente con la posición de un nodo. Las tablas mencionadas se cargan durante la inicialización del modelo, en la función \texttt{init()}, mediante dos clases auxiliares propias de OpenFOAM: \texttt{bladeModel}, que representa la geometría de la pala (Tabla~\ref{tab:AD_airfoil_perfil}), y \texttt{profileModelList}, que representa el conjunto de perfiles alares con sus respectivas curvas de lift y drag (Tabla~\ref{tab:AD_airfoil_polar}). El resto del cálculo, incluyendo la transformación de coordenadas, la descomposición de la velocidad relativa, y la aplicación de los factores de corrección de punta y de raíz, reutiliza las funciones comunes provistas por la clase base \texttt{actuatorModel}.
 
 \begin{table}[h]
 \centering
@@ -626,7 +548,8 @@ El Actuador Discal Numérico de van der Laan fue propuesto en 2015 por van der L
 \label{tab:AD_airfoil_polar}
 \end{table}
 
-van der Laan et al.~\cite{vanderlaan2015} plantean una calibración, utilizando como base el Actuador Discal Airfoil con los datos de la turbina NREL-5MW~\cite{jonkman2009}. Se realizan simulaciones de 1 turbina ante un flujo uniforme con una cierta velocidad en la entrada $U_\infty$, y a partir de cada simulación, se extraen $U_d$, $C_t$, $C_p$, $\Omega$ y las fuerzas normales y tangenciales en relación al radio $f_z(r)$ y $f_\theta(r)$. Se tienen entonces 2 tablas: la primera tendrá para cada velocidad aguas arriba $U_\infty$ los valores de la velocidad promedio en el disco $U_d$, los coeficientes de empuje y potencia $C_t$ y $C_p$, y la velocidad de giro $\Omega$ (ver Tabla~\ref{tab:vanderlaan_tabla1}); la segunda tabla tendrá, para cada velocidad $U_\infty$, las fuerzas normales y tangenciales para cada posición radial (ver Tabla~\ref{tab:vanderlaan_tabla2}).
+\subsection{\texttt{numeric}}
+El actuador \texttt{numeric} implementa el modelo de disco actuador propuesto por van der Laan et al.~\citep{vanderlaan2015}, ya presentado en la sección de estado del arte.Los autores de este modelo plantean una calibración, utilizando como base el actuador \texttt{airfoil} con los datos de otra turbina conocida, como por ejemplo la turbina NREL-5MW~\citep{jonkman2009}. Se realizan simulaciones de 1 turbina ante un flujo uniforme con una cierta velocidad en la entrada $U_\infty$, y a partir de cada simulación, se extraen $U_d$, $C_t$, $C_p$, $\Omega$ y las fuerzas normales y tangenciales en relación al radio $f_z(r)$ y $f_\theta(r)$. Se tienen entonces 2 tablas: la primera tendrá para cada velocidad aguas arriba $U_\infty$ los valores de la velocidad promedio en el disco $U_d$, los coeficientes de empuje y potencia $C_t$ y $C_p$, y la velocidad de giro $\Omega$ (ver Tabla~\ref{tab:vanderlaan_tabla1}). La segunda tabla tendrá, para cada velocidad $U_\infty$, las fuerzas normales y tangenciales para cada posición radial (ver Tabla~\ref{tab:vanderlaan_tabla2}).
 
 \begin{table}[h]
 \centering
@@ -639,7 +562,7 @@ $U_\infty$ & $U_d$ & $C_t$ & $C_p$ & $\Omega$ \\
 25 & \ldots & \ldots & \ldots & \ldots \\
 \hline
 \end{tabular}
-\caption{Tabla 1 del Actuador Discal Numérico de van der Laan.}
+\caption{Tabla 1 del actuador \texttt{numeric}.}
 \label{tab:vanderlaan_tabla1}
 \end{table}
 
@@ -658,23 +581,23 @@ $U_\infty$ & $r$ & $f_z$ & $f_\theta$ \\
 25 & $R$ & \ldots & \ldots \\
 \hline
 \end{tabular}
-\caption{Tabla 2 del Actuador Discal Numérico de van der Laan.}
+\caption{Tabla 2 del actuador \texttt{numeric}.}
 \label{tab:vanderlaan_tabla2}
 \end{table}
 
-Teniendo la calibración hecha, se utilizarán los valores para calcular las fuerzas de la siguiente forma. En primer lugar las distribuciones de fuerzas normales y tangenciales en cada aspa de la turbina vienen dadas por las expresiones:
+Teniendo la calibración hecha, se utilizan los valores para calcular las fuerzas de la siguiente forma. En primer lugar las distribuciones de fuerzas normales y tangenciales en cada aspa de la turbina vienen dadas por las expresiones:
 
 \begin{equation}
-f_z^{AD} = \hat{f}_z(r) \frac{1}{2 N_b}\rho U_d^2 A_d C_t^*
+f_z^{AD} = \hat{f}_z(r) \frac{1}{2 N_b}\rho U_{\infty}^2 A_d C_t
 \label{eq:vanderlaan_fzAD}
 \end{equation}
 
 \begin{equation}
-f_\theta^{AD} = \hat{f}_\theta(r) \frac{1}{2 N_b}\rho U_d^3 A_d \frac{C_p^*}{\omega}
+f_\theta^{AD} = \hat{f}_\theta(r) \frac{1}{2 N_b}\rho U_{\infty}^3 A_d \frac{C_p}{\omega}
 \label{eq:vanderlaan_fthetaAD}
 \end{equation}
 
-donde $\hat{f}_z(r)$ y $\hat{f}_\theta(r)$ son los factores de escala (ver ecuación~\ref{eq:vanderlaan_factores_escala}), $C_t^*$ y $C_p^*$ son los coeficientes de empuje y potencia escalados (ver ecuación~\ref{eq:vanderlaan_coef_escalados}), y $\omega$ es la velocidad de giro.
+donde $\hat{f}_z(r)$ y $\hat{f}_\theta(r)$ son los factores de escala (ver ecuación~\ref{eq:vanderlaan_factores_escala}) y $\omega$ es la velocidad de giro.
 
 \begin{equation}
 \hat{f}_z(r) = \frac{f_z(r)}{\int_0^R f_z(r)\, dr}, \qquad
@@ -682,13 +605,7 @@ donde $\hat{f}_z(r)$ y $\hat{f}_\theta(r)$ son los factores de escala (ver ecuac
 \label{eq:vanderlaan_factores_escala}
 \end{equation}
 
-\begin{equation}
-C_t^* = C_t \left(\frac{U_\infty}{U_d}\right)^2, \qquad
-C_p^* = C_p \left(\frac{U_\infty}{U_d}\right)^3
-\label{eq:vanderlaan_coef_escalados}
-\end{equation}
-
-Para poder realizar la implementación de este modelo de Actuador en OpenFOAM, debemos considerar un paso adicional en el desarrollo del mismo. Debido a que en OpenFOAM se aplican fuerzas normales y tangenciales en cada nodo, con valores de acuerdo a la superficie ocupada por ese nodo, debemos modificar levemente el planteo de las ecuaciones~\ref{eq:vanderlaan_fzAD} y \ref{eq:vanderlaan_fthetaAD} para ajustarse a la distribución en nodos. Tenemos entonces que la fuerza en cada nodo vendrá dada por el cociente entre la fuerza total impartida en esa posición radial y la cantidad de nodos en esa posición radial:
+Para poder realizar la implementación de este modelo de actuador en OpenFOAM, debemos considerar un paso adicional en el desarrollo del mismo. Debido a que en \texttt{wtActuatorFOAM} se aplican fuerzas normales y tangenciales en cada nodo, con valores de acuerdo a la superficie ocupada por ese nodo, debemos modificar levemente el planteo de las ecuaciones~\ref{eq:vanderlaan_fzAD} y \ref{eq:vanderlaan_fthetaAD} para ajustarse a la distribución en nodos. Tenemos entonces que la fuerza en cada nodo vendrá dada por el cociente entre la fuerza total impartida en esa posición radial y la cantidad de nodos en esa posición radial:
 
 \begin{equation}
 q_{n,i} = \frac{N_b f_z^{AD}(r_i) \, r_t}{nodes_{r_i}}
@@ -698,65 +615,35 @@ q_{n,i} = \frac{N_b f_z^{AD}(r_i) \, r_t}{nodes_{r_i}}
 siendo $r_t$ el espesor del anillo. Reemplazando $f_z^{AD}(r_i)$ con la ecuación~\ref{eq:vanderlaan_fzAD}, y simplificando $N_b$, obtenemos:
 
 \begin{equation}
-q_{n,i} = \frac{\hat{f}_z(r) \dfrac{1}{2}\rho U_d^2 A_d C_t^* \, r_t}{nodes_{r_i}}
+q_{n,i} = \frac{\hat{f}_z(r) \dfrac{1}{2}\rho U_{\infty}^2 A_d C_t \, r_t}{nodes_{r_i}}
 \label{eq:vanderlaan_qn2}
 \end{equation}
 
 Análogamente para la fuerza tangencial:
 
 \begin{equation}
-q_{t,i} = \frac{\hat{f}_\theta(r) \dfrac{1}{2}\rho U_d^3 A_d \dfrac{C_p^*}{\omega} \, r_t}{nodes_{r_i}}
+q_{t,i} = \frac{\hat{f}_\theta(r) \dfrac{1}{2}\rho U_{\infty}^3 A_d \dfrac{C_p}{\omega} \, r_t}{nodes_{r_i}}
 \label{eq:vanderlaan_qt}
 \end{equation}
 
-
-% ---- Agregar al final de \subsection{Actuador Discal Numérico de van der Laan} ----
-
-La implementación del Actuador Discal Numérico de van der Laan utiliza 2 tablas anexas, la Tabla~\ref{tab:vanderlaan_tabla1} y la Tabla~\ref{tab:vanderlaan_tabla2} ya presentadas. El flujo de trabajo, esquematizado en la Figura~\ref{fig:impl_vanderlaan}, se describe a continuación:
-
-\begin{enumerate}
-\item Inicialización de la simulación.
-\item Cálculo de la velocidad promedio sobre el actuador $U_d$ (loop en celdas para el cálculo de pesos según la distancia al disco y el volumen total del disco, y loop en celdas para la suma de la velocidad sensada, pesando con la distancia al disco y el volumen total).
-\item Ingreso a la Tabla~\ref{tab:vanderlaan_tabla1} con $U_d$, para obtener la velocidad de referencia $U_{ref}$, la velocidad de giro $\omega$, y los coeficientes de empuje y potencia $C_t$ y $C_p$.
-\item Sumatoria de fuerzas en el radio para obtener los factores de escala $\hat{f}_z$ y $\hat{f}_\theta$ (ecuación~\ref{eq:vanderlaan_factores_escala}), integrando mediante la regla de trapecios:
+La implementación del actuador \texttt{numeric} no sigue literalmente la secuencia de ecuaciones anterior. En lugar de calcular $\hat{f}_z(r)$ y $\hat{f}_\theta(r)$ mediante integrales continuas en $r$ (ecuación~\ref{eq:vanderlaan_factores_escala}), la biblioteca resuelve el mismo problema de forma equivalente pero más directa, evitando estos últimos por completo. La tabla que la biblioteca requiere no tiene el formato de la Tabla~\ref{tab:vanderlaan_tabla2}, sino un formato más general de seis columnas, compartido con el actuador \texttt{adaptive}: velocidad de referencia $U_{ref}$, velocidad de entrada no perturbada $U_\infty$, posición radial $r$, velocidad local en el nodo $U_{d,i}(r)$, y las fuerzas normal y tangencial por unidad de superficie $f_z(r)$ y $f_\theta(r)$. Durante la inicialización, en \texttt{init()}, se descarta la columna de velocidad local (no utilizada por este modelo) y se conservan únicamente las filas donde $U_\infty$ coincide con $U_{ref}$, condición correspondiente a un flujo no perturbado. Los valores resultantes de $f_z(r)$ y $f_\theta(r)$ se reinterpolan linealmente sobre las posiciones radiales propias de la malla de nodos del actuador.
+Sobre esta tabla ya reinterpolada, y también en \texttt{init()}, se calcula para cada valor de $U_{\infty}$ presente en la calibración un factor de normalización, obtenido como la suma, sobre todos los nodos del actuador, del valor tabulado en cada nodo ponderado por su área:
 \begin{equation}
-\int_A^B f(x)\,dx \approx (B-A)\frac{f(A)+f(B)}{2}
-\label{eq:trapecio_regla}
+S_z(U_{ref}) = \sum_{nodos} f_z(r_i)\, A_i, \qquad S_\theta(U_{ref}) = \sum_{nodos} f_\theta(r_i)\, r_i\, A_i
+\label{eq:numeric_normalizacion}
 \end{equation}
+Finalmente, en \texttt{applyForce()}, ejecutada en cada paso temporal, se interpola entre los dos valores de $U_{\infty}$ de la tabla que rodean al $U_{\infty}$ actual de la turbina, y la fuerza en cada nodo se calcula como:
 \begin{equation}
-\int_0^R f_z(r)\,dr \approx \sum_i (r_{i+1}-r_i)\frac{1}{2}\left[f_z(r_i)+f_z(r_{i+1})\right]
-\label{eq:trapecio_fz}
+F_{z,i} = \frac{f_z(r_i)}{S_z(U_{\infty})}\, A_i \, T, \qquad F_{\theta,i} = \frac{f_\theta(r_i)}{S_\theta(U_{\infty})}\, A_i \, Q
+\label{eq:numeric_fuerza_nodo}
 \end{equation}
-\begin{equation}
-\int_0^R f_\theta(r)\, r\, dr \approx \sum_i (r_{i+1}-r_i)\frac{1}{2}\left[f_\theta(r_i)\,r_i + f_\theta(r_{i+1})\,r_{i+1}\right]
-\label{eq:trapecio_ftheta}
-\end{equation}
-\item Loop sobre los nodos, realizando para cada uno:
-\begin{enumerate}
-\item Ingreso a la Tabla~\ref{tab:vanderlaan_tabla2} utilizando la velocidad de referencia y el radio, para obtener los valores de fuerza $f_z(r)$ y $f_\theta(r)$.
-\item Cálculo de los factores de escala de fuerzas $\hat{f}_z$ y $\hat{f}_\theta$.
-\item Cálculo de las fuerzas.
-\item Loop en celdas para calcular los pesos según la distancia al nodo.
-\item Loop sobre celdas para aplicar las fuerzas.
-\end{enumerate}
-\item OpenFOAM resuelve el campo de velocidades.
-\item Si se converge en la solución se termina la simulación, si no, se vuelve al paso 2.
-\end{enumerate}
+donde $T$ y $Q$ son el empuje y el torque totales vigentes en ese instante, calculados a partir de los coeficientes $C_t$ y $C_p$ actuales de la turbina, del mismo modo que en el actuador \texttt{uniform}. Puede verificarse que, al sumar $F_{z,i}$ sobre todos los nodos se recupera exactamente el empuje total $T$, y que al sumar $F_{\theta,i} \cdot r_i$ se recupera exactamente el torque total $Q$, sin necesidad de recurrir a coeficientes reescalados: la forma tabulada se normaliza para sumar a la unidad de forma discreta sobre la propia malla del actuador, y luego se escala directamente por el empuje y el torque físicos correspondientes al punto de operación actual.
 
-\begin{figure}[h]
-\centering
-%\includegraphics[width=0.9\textwidth]{}
-\caption{Flujo de trabajo de implementación del Actuador Discal Numérico de van der Laan.}
-\label{fig:impl_vanderlaan}
-\end{figure}
+\subsubsection{Calibración}
+Tanto \texttt{numeric} como \texttt{adaptive} requieren de una tabla de calibración previa, construida a partir de simulaciones auxiliares. Para esto, la biblioteca ofrece un modo de \texttt{calibration}, activable en cualquier actuador mediante el parámetro homónimo, que permite imponer manualmente $U_{ref}$, y opcionalmente $U_\infty$, $C_p$, $C_t$, $\omega$ y el ángulo de pitch, salteando por completo el cálculo del modelo de inducción. Habitualmente se utiliza en conjunto con el actuador \texttt{airfoil}, ya que provee un perfil de fuerzas realista basado en la geometría real de la turbina, aunque en principio puede calibrarse con cualquier otra variante.
+El procedimiento consiste en correr una serie de simulaciones auxiliares, imponiendo en cada una un valor de $U_{ref}$ y de $U_\infty$, y activando \texttt{saveNodeForces} para registrar la posición radial y las fuerzas $f_z(r)$ y $f_\theta(r)$ obtenidas en cada nodo. Repitiendo este procedimiento para distintas combinaciones de $U_{ref}$ y $U_\infty$ se compila la tabla de seis columnas mencionada anteriormente, que luego se provee a la biblioteca mediante el parámetro \texttt{forcesRadialDistribution}.
 
-{\Large 2 CORRECCIONES A REALIZAR:}
-
-{\Large No hay integral por trapecios.}
-
-{\Large No se recalcula en cada paso de tiempo}
-
-A diferencia de las variantes anteriores, \texttt{actuatorModel\_numeric} no define funciones auxiliares propias, concentrando toda su lógica específica en \texttt{init()} y en \texttt{applyForce()}. La mayor parte del trabajo específico de este modelo se realiza una única vez, en \texttt{init()}: allí se lee la tabla de calibración provista por el usuario (Tabla~\ref{tab:vanderlaan_tabla2}) y se reconstruye internamente sobre las posiciones radiales propias de la malla de nodos del actuador, mediante interpolación lineal en el radio. Sobre esta tabla reconstruida se calculan además, para cada valor de $U_{ref}$ presente en la calibración, los factores de normalización de fuerza normal y tangencial, obtenidos como la suma de la fuerza tabulada en cada nodo ponderada por el área asignada a dicho nodo. En \texttt{applyForce()}, ejecutada en cada paso temporal, solo resta interpolar entre los dos valores de $U_{ref}$ de la tabla que rodean al $U_{ref}$ actual de la turbina, y escalar el resultado por el empuje y el torque totales vigentes en ese instante.
+A diferencia de las variantes anteriores, \texttt{actuatorModel\_numeric} no define funciones auxiliares propias, concentrando toda su lógica específica en \texttt{init()} y en \texttt{applyForce()}. La mayor parte del trabajo específico de este modelo se realiza una única vez, en \texttt{init()}, tal como se describió anteriormente. En \texttt{applyForce()}, ejecutada en cada paso temporal, solo resta interpolar entre los dos valores de $U_{ref}$ de la tabla que rodean al $U_{ref}$ actual de la turbina, y escalar el resultado por el empuje y el torque totales vigentes en ese instante.
 
 \subsection{\texttt{adaptive}}
 

@@ -5,18 +5,18 @@
 \contentsline {xchapter}{Marco teórico}{2}{chapter.2}%
 \addvspace {10\p@ }
 \contentsline {xchapter}{Desarrollo de la biblioteca \texttt {wtActuatorFoam}}{5}{chapter.3}%
-\contentsline {table}{\numberline {3.1}{\ignorespaces Tabla 1 de Actuador Airfoil en base a trabajo de Jonkman et al.~\cite {jonkman2009}.}}{25}{table.caption.12}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces Tabla para cada perfil de Actuador Airfoil en base a trabajo de Jonkman et al.~\cite {jonkman2009}.}}{26}{table.caption.14}%
-\contentsline {table}{\numberline {3.3}{\ignorespaces Tabla 1 del Actuador Discal Numérico de van der Laan.}}{27}{table.caption.15}%
-\contentsline {table}{\numberline {3.4}{\ignorespaces Tabla 2 del Actuador Discal Numérico de van der Laan.}}{27}{table.caption.16}%
-\contentsline {table}{\numberline {3.5}{\ignorespaces Tabla 1 del Actuador Discal Numérico de Navarro Díaz.}}{29}{table.caption.18}%
-\contentsline {table}{\numberline {3.6}{\ignorespaces Tabla 2 del Actuador Discal Numérico de Navarro Díaz.}}{30}{table.caption.19}%
-\contentsline {table}{\numberline {3.7}{\ignorespaces Input and output characteristics of different actuator models}}{37}{table.caption.25}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Tabla 1 del actuador \texttt {airfoil}, con los valores correspondientes a la turbina de referencia NREL 5MW~\citep {jonkman2009}.}}{22}{table.caption.11}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Tabla para cada perfil de Actuador Airfoil en base a trabajo de Jonkman et al.~\cite {jonkman2009}.}}{23}{table.caption.12}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Tabla 1 del actuador \texttt {numeric}.}}{24}{table.caption.13}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Tabla 2 del actuador \texttt {numeric}.}}{24}{table.caption.14}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Tabla 1 del Actuador Discal Numérico de Navarro Díaz.}}{26}{table.caption.15}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Tabla 2 del Actuador Discal Numérico de Navarro Díaz.}}{27}{table.caption.16}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Input and output characteristics of different actuator models}}{34}{table.caption.22}%
 \addvspace {10\p@ }
-\contentsline {xchapter}{Influencia de las condiciones de entrada en la estela de aergeneradores flotantes}{48}{chapter.4}%
+\contentsline {xchapter}{Influencia de las condiciones de entrada en la estela de aergeneradores flotantes}{45}{chapter.4}%
 \addvspace {10\p@ }
-\contentsline {xchapter}{Impacto de cambios de dirección de viento en la estela de aerogeneradores}{49}{chapter.5}%
+\contentsline {xchapter}{Impacto de cambios de dirección de viento en la estela de aerogeneradores}{46}{chapter.5}%
 \addvspace {10\p@ }
-\contentsline {xchapter}{Modelado de ciclos diurnos con URANS}{50}{chapter.6}%
+\contentsline {xchapter}{Modelado de ciclos diurnos con URANS}{47}{chapter.6}%
 \addvspace {10\p@ }
-\contentsline {xchapter}{Conclusiones generales y futuras líneas de investigación}{51}{chapter.7}%
+\contentsline {xchapter}{Conclusiones generales y futuras líneas de investigación}{48}{chapter.7}%

@@ -1,37 +1,37 @@
 {\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.1}Estado del arte}{\reset@font\mtcSfont 5}{section.3.1}}
 {\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.1.1}Actuador Discal $\text {$\mathsurround \z@ \mathchar "458$}$}{\reset@font\mtcSSfont 5}{subsection.3.1.1}}
 {\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.1.2}Actuador Lineal}{\reset@font\mtcSSfont 7}{subsection.3.1.2}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.2}Estructura de la biblioteca \texttt {wtActuatorFoam}}{\reset@font\mtcSfont 11}{section.3.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.1}\texttt {fvOptions} $\text {$\mathsurround \z@ \mathchar "458$}$}{\reset@font\mtcSSfont 11}{subsection.3.2.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.2}Mallado del actuador y mallado del fluido \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 11}{subsection.3.2.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.3}Arquitectura de la clase \texttt {wtActuatorSource} \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 12}{subsection.3.2.3}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.4}La clase \texttt {actuatorModel} y su relación con \texttt {wtActuatorSource} $\text {$\mathsurround \z@ \mathchar "458$}$}{\reset@font\mtcSSfont 13}{subsection.3.2.4}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.5}Funciones comunes a todas las variantes de \texttt {actuatorModel} \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 13}{subsection.3.2.5}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.6}Ciclo de ejecución de la simulación \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 13}{subsection.3.2.6}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.7}Incorporación de los términos fuente a la ecuación de momento \Large Definir si va a Marco Teórico o no}{\reset@font\mtcSSfont 14}{subsection.3.2.7}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.3}Parámetros generales de funcionamiento}{\reset@font\mtcSfont 14}{section.3.3}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.1}Mallado local del actuador \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 14}{subsection.3.3.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.2}Modelo de inducción \Large VER CON EL NOMBRE DEL INDUCTION MODEL}{\reset@font\mtcSSfont 15}{subsection.3.3.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.3}Factor de corrección de punta de pala \Large REVISAR CON ALE}{\reset@font\mtcSSfont 16}{subsection.3.3.3}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.4}Factor de corrección de raíz de pala \Large REVISAR CON ALE}{\reset@font\mtcSSfont 17}{subsection.3.3.4}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.5}Métodos de medición de la velocidad promedio en el disco}{\reset@font\mtcSSfont 18}{subsection.3.3.5}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {3.3.5.1}Corrección por dependencia de malla}{\reset@font\mtcSSSfont 19}{subsubsection.3.3.5.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.6}Métodos de distribución de fuerzas}{\reset@font\mtcSSfont 19}{subsection.3.3.6}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.7}Niveles de guardado}{\reset@font\mtcSSfont 20}{subsection.3.3.7}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.4}Modelos de actuador implementados en \texttt {wtActuatorFoam}}{\reset@font\mtcSfont 21}{section.3.4}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.1}\texttt {uniform}}{\reset@font\mtcSSfont 21}{subsection.3.4.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.2}Aplicación de factores de corrección}{\reset@font\mtcSSfont 23}{subsection.3.4.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.3}\texttt {airfoil}}{\reset@font\mtcSSfont 24}{subsection.3.4.3}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.4}\texttt {numeric}}{\reset@font\mtcSSfont 29}{subsection.3.4.4}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.5}\texttt {adaptive}}{\reset@font\mtcSSfont 34}{subsection.3.4.5}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.6}\texttt {analytic}}{\reset@font\mtcSSfont 37}{subsection.3.4.6}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {3.4.6.1}Generalización para perfiles de velocidad no uniformes}{\reset@font\mtcSSSfont 40}{subsubsection.3.4.6.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.7}\texttt {genanalytic}}{\reset@font\mtcSSfont 45}{subsection.3.4.7}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.8}Tabla comparativa}{\reset@font\mtcSSfont 49}{subsection.3.4.8}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.5}Verificación}{\reset@font\mtcSfont 50}{section.3.5}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.6}Análisis de Escalabilidad}{\reset@font\mtcSfont 55}{section.3.6}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.7}Validacion}{\reset@font\mtcSfont 56}{section.3.7}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.8}Caso de Aplicación: Análisis de rotación de la estela lejana en contexto de ASL}{\reset@font\mtcSfont 56}{section.3.8}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.8.1}Configuración numérica}{\reset@font\mtcSSfont 56}{subsection.3.8.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.8.2}Corrimiento del centro de la estela}{\reset@font\mtcSSfont 59}{subsection.3.8.2}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.9}Conclusiones del Capítulo}{\reset@font\mtcSfont 64}{section.3.9}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.2}Estructura de la biblioteca \texttt {wtActuatorFoam}}{\reset@font\mtcSfont 10}{section.3.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.1}\texttt {fvOptions} $\text {$\mathsurround \z@ \mathchar "458$}$}{\reset@font\mtcSSfont 10}{subsection.3.2.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.2}Mallado del actuador y mallado del fluido \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 10}{subsection.3.2.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.3}Arquitectura de la clase \texttt {wtActuatorSource} \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 11}{subsection.3.2.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.4}La clase \texttt {actuatorModel} y su relación con \texttt {wtActuatorSource} $\text {$\mathsurround \z@ \mathchar "458$}$}{\reset@font\mtcSSfont 12}{subsection.3.2.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.5}Funciones comunes a todas las variantes de \texttt {actuatorModel} \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 12}{subsection.3.2.5}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2.6}Ciclo de ejecución de la simulación \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 12}{subsection.3.2.6}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.3}Parámetros generales de funcionamiento}{\reset@font\mtcSfont 13}{section.3.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.1}Mallado local del actuador \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 13}{subsection.3.3.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.2}Modelo de inducción \Large VER CON EL NOMBRE DEL INDUCTION MODEL}{\reset@font\mtcSSfont 14}{subsection.3.3.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.3}Factor de corrección de punta de pala \Large REVISAR CON ALE}{\reset@font\mtcSSfont 15}{subsection.3.3.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.4}Factor de corrección de raíz de pala \Large REVISAR CON ALE}{\reset@font\mtcSSfont 16}{subsection.3.3.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.5}Métodos de medición de la velocidad promedio en el disco}{\reset@font\mtcSSfont 17}{subsection.3.3.5}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {3.3.5.1}Corrección por dependencia de malla}{\reset@font\mtcSSSfont 18}{subsubsection.3.3.5.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.6}Métodos de distribución de fuerzas}{\reset@font\mtcSSfont 18}{subsection.3.3.6}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3.7}Niveles de guardado}{\reset@font\mtcSSfont 19}{subsection.3.3.7}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.4}Modelos de actuador implementados en \texttt {wtActuatorFoam}}{\reset@font\mtcSfont 19}{section.3.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.1}\texttt {uniform} \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 20}{subsection.3.4.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {3.4.1.1}Aplicación de factores de corrección de punta y de raíz \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSSfont 21}{subsubsection.3.4.1.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.2}\texttt {airfoil} \text {$\mathsurround \z@ \mathchar "458$}}{\reset@font\mtcSSfont 22}{subsection.3.4.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.3}\texttt {numeric}}{\reset@font\mtcSSfont 24}{subsection.3.4.3}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {3.4.3.1}Calibración}{\reset@font\mtcSSSfont 26}{subsubsection.3.4.3.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.4}\texttt {adaptive}}{\reset@font\mtcSSfont 26}{subsection.3.4.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.5}\texttt {analytic}}{\reset@font\mtcSSfont 28}{subsection.3.4.5}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {3.4.5.1}Generalización para perfiles de velocidad no uniformes}{\reset@font\mtcSSSfont 29}{subsubsection.3.4.5.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.6}\texttt {genanalytic}}{\reset@font\mtcSSfont 32}{subsection.3.4.6}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4.7}Tabla comparativa}{\reset@font\mtcSSfont 34}{subsection.3.4.7}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.5}Verificación}{\reset@font\mtcSfont 35}{section.3.5}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.6}Análisis de Escalabilidad}{\reset@font\mtcSfont 38}{section.3.6}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.7}Validacion}{\reset@font\mtcSfont 38}{section.3.7}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.8}Caso de Aplicación: Análisis de rotación de la estela lejana en contexto de ASL}{\reset@font\mtcSfont 38}{section.3.8}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.8.1}Configuración numérica}{\reset@font\mtcSSfont 38}{subsection.3.8.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.8.2}Corrimiento del centro de la estela}{\reset@font\mtcSSfont 40}{subsection.3.8.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3.9}Conclusiones del Capítulo}{\reset@font\mtcSfont 44}{section.3.9}}
