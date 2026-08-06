@@ -641,163 +641,82 @@ La función específica de la variante \texttt{actuatorModel\_adaptive} es \text
 Al igual que en \texttt{numeric}, los factores de corrección de punta y de raíz no se aplican en este actuador, independientemente de cómo se los configure en el archivo \texttt{fvOptions}, ya que \texttt{applyForce()} no llama en ningún momento a las funciones correspondientes de la clase base.
 
 \subsection{\texttt{analytic}}
+El actuador \texttt{analytic} fue propuesto por Sørensen et al.~\citep{sorensen2020}, y se basa en un planteo puramente analítico que no requiere conocer la geometría real de la turbina, a diferencia de \texttt{airfoil}, ni una calibración previa mediante simulaciones auxiliares, a diferencia de \texttt{numeric} y \texttt{adaptive}.
 
-El Actuador Discal Analítico fue propuesto por Sørensen et al.~\cite{sorensen2020} en 2020. Este modelo de actuador discal se basa en considerar un actuador discal con una circulación constante, modificada por un factor de punta o tip factor $F_{tip}$ (en este caso de Prandtl) y un factor de raíz o root factor $F_{root}$ (en este caso inspirado en el trabajo de Delery). De esta forma la distribución de la velocidad acimutal o tangencial resulta:
-
+La fuerza normal y tangencial de superficie que actúan sobre el disco se obtienen combinando la ecuación de Bernoulli, aplicada en un marco de referencia rotante junto con el rotor entre un punto justo aguas arriba y uno justo aguas abajo del disco, con la ecuación de Euler de las turbomáquinas, aplicada a un anillo diferencial del disco. De esta combinación resulta
 \begin{equation}
-U_\theta = \frac{\Gamma_0 \cdot F_{root}\cdot F_{tip}}{4\pi \cdot r}
-\label{eq:analitico_Utheta}
-\end{equation}
-
-siendo $\Gamma_0$ la circulación de referencia. Se define la circulación de referencia adimensional $q_0$ como:
-
-\begin{equation}
-q_0 = \frac{\Gamma_0}{4\pi R U_\infty}
-\label{eq:analitico_q0}
-\end{equation}
-
-Las fuerzas que se aplican sobre el actuador discal se obtienen a partir de la ecuación de Euler y la ecuación de Bernoulli en un sistema de referencia rotante a través del plano del rotor:
-
-\begin{equation}
-f_z = \rho U_\theta \left(\omega r + \frac{1}{2}U_\theta\right)
+f_z = \rho U_\theta\left(\omega r + \frac{1}{2}U_\theta\right), \qquad f_\theta = \rho U_d U_\theta
 \label{eq:analitico_fz}
 \end{equation}
+siendo $U_\theta$ la velocidad acimutal o de remolino que el disco le impone al fluido, $\omega$ la velocidad de giro de la turbina, y $U_d$ la velocidad axial en el plano del rotor.
 
+Para poder utilizar estas expresiones sin conocer la geometría de la turbina, se necesita un modelo para $U_\theta(r)$. Este modelo se construye a partir del teorema de Helmholtz, que establece que un filamento de vorticidad no puede terminar dentro del fluido. Si la circulación ligada a cada pala fuese constante a lo largo de toda su envergadura, en lugar de desprenderse una lámina continua de vórtices como ocurre en una pala real, solo se desprenderían dos filamentos concentrados por pala, uno en la punta y otro en la raíz. Los filamentos de raíz de las $N_b$ palas se combinan sobre el eje de rotación en un único filamento recto semi infinito, con circulación total $\Gamma_0$, que se extiende desde el disco hacia aguas abajo. Este es el vórtice conocido como rotor de Joukowsky, y es el que efectivamente determina la forma de $U_\theta(r)$, no el vórtice de punta. Por la ley de Biot Savart, un filamento recto semi infinito de circulación $\Gamma_0$ induce, a una distancia radial $r$ de su eje, una velocidad tangencial $\Gamma_0/(4\pi r)$.
+
+El efecto del vórtice de punta, y de la cantidad finita de palas en general, se incorpora de forma aproximada multiplicando esta expresión por un factor de corrección de punta $F_{tip}$ (en este caso el de Prandtl, ya presentado en la sección de factores de corrección), y el efecto de la góndola y la parte no sustentadora cercana al eje se incorpora mediante un factor de corrección de raíz $F_{root}$ (en este caso inspirado en el trabajo de Delery~\citep{delery1994} sobre el núcleo viscoso de un vórtice). La velocidad acimutal resulta entonces
 \begin{equation}
-f_\theta = \rho U_d U_\theta
-\label{eq:analitico_ftheta}
+U_\theta = \frac{\Gamma_0 \, F_{root}\, F_{tip}}{4\pi r}
+\label{eq:analitico_Utheta}
 \end{equation}
-
-siendo $U_d$ la velocidad axial que impacta sobre el plano del rotor.
-
-Incluyendo la ecuación~\ref{eq:analitico_q0} en la ecuación~\ref{eq:analitico_Utheta}, y luego en las ecuaciones~\ref{eq:analitico_fz} y \ref{eq:analitico_ftheta}, se obtienen las fuerzas de superficie adimensionalizadas:
-
+Se define la circulación de referencia adimensional $q_0 = \Gamma_0/(4\pi R U_\infty)$. Reemplazando la ecuación~\ref{eq:analitico_Utheta} en la ecuación~\ref{eq:analitico_fz}, y adimensionalizando con $\rho U_\infty^2$, $\lambda=\omega R/U_\infty$ y $x=r/R$, se obtienen las fuerzas de superficie adimensionalizadas
 \begin{equation}
-\frac{f_z}{\rho U_\infty^2} = q_0 \frac{F_{root}F_{tip}}{x}\left(\lambda x + \frac{1}{2}q_0 \frac{F_{root}F_{tip}}{x}\right)
+\frac{f_z}{\rho U_\infty^2} = q_0 \frac{F_{root}F_{tip}}{x}\left(\lambda x + \frac{1}{2}q_0 \frac{F_{root}F_{tip}}{x}\right), \qquad
+\frac{f_\theta}{\rho U_\infty^2} = \frac{U_d}{U_\infty}q_0\frac{F_{root}F_{tip}}{x}
 \label{eq:analitico_fz_adim}
 \end{equation}
 
+Asumiendo un perfil de velocidad de entrada uniforme, integrando la primera de estas expresiones sobre toda el área del disco se obtiene el coeficiente de empuje
 \begin{equation}
-\frac{f_\theta}{\rho U_\infty^2} = \frac{U_d}{U_\infty}q_0\frac{F_{root}F_{tip}}{x}
-\label{eq:analitico_ftheta_adim}
-\end{equation}
-
-Desarrollando la ecuación del coeficiente de empuje asumiendo un perfil de velocidades uniforme en el rotor tenemos:
-
-\begin{equation}
-C_t = \frac{\int_{AD} f_z\, dA}{\dfrac{1}{2}\rho\pi R^2 U_\infty^2} = 4 q_0 \lambda \int_0^1 F_{root}F_{tip}\, x\, dx + 2 q_0^2 \int_0^1 \frac{F_{root}^2 F_{tip}^2}{x}\, dx
+C_t = 4 q_0 \lambda \int_0^1 F_{root}F_{tip}\, x\, dx + 2 q_0^2 \int_0^1 \frac{F_{root}^2 F_{tip}^2}{x}\, dx
 \label{eq:analitico_Ct}
 \end{equation}
-
-Si $a_1 = \displaystyle\int_0^1 \frac{F_{root}^2 F_{tip}^2}{x}\, dx$ y $a_2 = \displaystyle\int_0^1 F_{root}F_{tip}\, x\, dx$, y dado un coeficiente $C_t$ y $\lambda$ como conocidos, podemos despejar $q_0$:
-
+Definiendo $a_1 = \int_0^1 F_{root}^2 F_{tip}^2/x\, dx$ y $a_2 = \int_0^1 F_{root}F_{tip}\, x\, dx$, ambos puramente geométricos ya que solo dependen de la forma de $F_{root}(x)$ y $F_{tip}(x)$, y conocidos $C_t$ y $\lambda$, se despeja
 \begin{equation}
 q_0 = \frac{\sqrt{16\lambda^2 a_2^2 + 8 a_1 C_t} - 4\lambda a_2}{4 a_1}
 \label{eq:analitico_q0_despejado}
 \end{equation}
-
-Por otro lado, el coeficiente de potencia $C_p$ se obtiene como:
-
+Análogamente, integrando la fuerza tangencial se obtiene el coeficiente de potencia
 \begin{equation}
-C_p = \frac{Q\omega}{\dfrac{1}{2}\rho\pi R^2 U_\infty^3} = 4\lambda q_0 \int_0^1 \frac{U_d}{U_\infty} F_{root}F_{tip}\, x\, dx
+C_p = 4\lambda q_0 \int_0^1 \frac{U_d}{U_\infty} F_{root}F_{tip}\, x\, dx
 \label{eq:analitico_Cp}
 \end{equation}
 
-siendo $Q$ el torque.
+Los valores de $C_t$, $C_p$, $\omega$ y el ángulo de pitch necesarios para evaluar estas expresiones se obtienen mediante el modelo de inducción configurado, ya descripto en la sección correspondiente, sin que \texttt{actuatorModel\_analytic} necesite calcularlos por sí mismo.
 
-Para obtener la velocidad de referencia de la turbina, se plantea un volumen de control que envuelva el rotor, desde una superficie lejana aguas arriba, hasta una superficie lejana aguas abajo. De esta forma, el coeficiente de empuje resulta:
-
+En un caso real, o en una simulación de CFD, el perfil de velocidad de entrada rara vez es uniforme, ya sea por cizalladura atmosférica, por turbulencia, o por la interferencia de estelas de otras turbinas, un caso de especial interés en esta tesis. Sørensen et al.~\citep{sorensen2020} generalizan el modelo para este caso partiendo de un resultado adicional de la teoría de momento unidimensional clásica, obtenido considerando un volumen de control que envuelve al rotor desde una sección lejana aguas arriba hasta una sección lejana aguas abajo, que vincula la velocidad de referencia con la velocidad promedio en el disco
 \begin{equation}
 C_t = 4\frac{U_d}{U_{\infty,ref}}\left(1 - \frac{U_d}{U_{\infty,ref}}\right)
-\label{eq:analitico_Ct_volumen_control}
-\end{equation}
-
-Asumiendo que $\dfrac{U_\infty}{U_{\infty,ref}} = \dfrac{U_d}{U_d}$, se despeja la velocidad de referencia:
-
-\begin{equation}
-U_\infty = \frac{2 U_d}{1 + \sqrt{1 - C_t}}
+\qquad\Rightarrow\qquad
+U_{\infty,ref} = \frac{2 U_d}{1 + \sqrt{1 - C_t}}
 \label{eq:analitico_Uinf}
 \end{equation}
-
-Utilizando entonces la ecuación~\ref{eq:analitico_Uinf} y la curva de potencia de la turbina, se puede iterar para obtener el valor de $U_\infty$ y de $C_t$ a partir de la velocidad media del actuador.
-
-\subsubsection{Generalización para perfiles de velocidad no uniformes}
-
-Al desarrollar la ecuación~\ref{eq:analitico_Ct} para obtener la expresión que nos permite calcular $q_0$, Sørensen et al.~\cite{sorensen2020} asumen un perfil de flujo uniforme. Esta suposición sabemos que no siempre se cumple, en especial en casos en que se tiene interferencia de estela, los cuales son de especial interés en la presente tesis. Es por eso que se generalizó para permitir flujos no uniformes en la entrada. Se parte de considerar la expresión integral del empuje, la cual se discretiza en los nodos considerando el área asociada a cada uno de ellos. Luego se aplica la expresión de la fuerza normal del rotor, y se desarrolla hasta obtener 2 factores que se calculan como una sumatoria sobre los nodos $a_1$ y $a_2$. Finalmente se despeja $q_0$, la cual queda dependiendo de los factores $a_1$ y $a_2$, de $\lambda$, del empuje $T$ y de la densidad $\rho$.
-
-\begin{align}
-T &= \int_{AD} f_z\, dA, \label{eq:gen_T1}\\
-T &= \sum_{i}^{nodos} f_{z,i}\cdot A_i, \label{eq:gen_T2}\\
-T &= \sum_{i}^{nodos}\left[\rho U_{\infty,i}^2 q_0 \frac{F_{root,i}F_{tip,i}}{x_i}\left(\lambda x_i + \frac{1}{2}q_0\frac{F_{root,i}F_{tip,i}}{x_i}\right)\right]\cdot A_i, \label{eq:gen_T3}\\
-T &= \rho q_0 \sum_{i}^{nodos} U_{\infty,i}^2 F_{root,i}F_{tip,i}\left(\lambda x_i + \frac{1}{2}q_0\frac{F_{root,i}F_{tip,i}}{x_i}\right)\cdot A_i, \label{eq:gen_T4}\\
-T &= \rho q_0 \left[\lambda\underbrace{\sum_{i}^{nodos} U_{\infty,i}^2 A_i F_{root,i}F_{tip,i}}_{a_1} + q_0 \underbrace{\sum_{i}^{nodos} U_{\infty,i}^2 A_i \frac{1}{2}\left(\frac{F_{root,i}F_{tip,i}}{x_i}\right)^2}_{a_2}\right], \label{eq:gen_T5}\\
-0 &= q_0^2 a_2 + q_0 \lambda a_1 - \frac{T}{\rho}, \label{eq:gen_T6}\\
-\Rightarrow\ q_0 &= \frac{-\lambda a_1 + \sqrt{(\lambda a_1)^2 - 4 a_2(-T/\rho)}}{2 a_2}. \label{eq:gen_q0}
-\end{align}
-
-De igual manera se debe generalizar el cálculo de la potencia para luego calcular el coeficiente de potencia. Tenemos que:
-
-\begin{align}
-P &= \omega\int_{AD} f_\theta r\, dA = \omega R \int_{AD} f_\theta x\, dA = \omega R\sum_{i}^{nodos} f_{\theta,i}x_i A_i, \label{eq:gen_P1}\\
-P &= \omega R\rho\sum_{i}^{nodos} U_{\infty,i} U_{d,i}\, q_0\, F_{root,i}F_{tip,i}\, A_i. \label{eq:gen_P2}
-\end{align}
-
-Luego el coeficiente de potencia se calcula como:
-
+La generalización consiste en asumir que esta misma relación, entre velocidad de entrada y velocidad en el disco, se cumple localmente en cada punto del disco, con el mismo $C_t$ global de toda la turbina, es decir, $U_\infty(x,\theta)/U_{\infty,ref} = U_{d}(x,\theta)/\langle U_d\rangle$. Bajo esta hipótesis, se obtiene una velocidad de entrada local equivalente $U_{\infty,i}$ para cada nodo $i$, a partir de la velocidad local axial sentida en dicho nodo $U_{d,i}$
 \begin{equation}
-C_p = \frac{P}{\dfrac{1}{2}\rho\pi R^2 U_\infty^3}
-\label{eq:gen_Cp1}
+U_{\infty,i} = \frac{2 U_{d,i}}{1+\sqrt{1-C_t}}
+\label{eq:analitico_Uinfi}
 \end{equation}
+Esta velocidad local $U_{\infty,i}$ se utiliza luego en lugar de $U_\infty$ en la ecuación~\ref{eq:analitico_fz_adim}, para obtener la fuerza en cada nodo. Es importante notar que $q_0$ no se recalcula para este caso, permanece igual al obtenido en la ecuación~\ref{eq:analitico_q0_despejado} a partir del $C_t$ y el $\lambda$ globales de toda la turbina. Esto constituye una hipótesis de trabajo y no una generalización exacta, ya que la integral que define el empuje total ya no puede resolverse de forma cerrada cuando la velocidad de entrada varía dentro de ella, y por lo tanto no hay garantía de que la distribución de fuerzas resultante integre exactamente al empuje impuesto por $C_t$, a diferencia de lo que ocurre en el actuador \texttt{uniform} mediante el factor de escala presentado anteriormente en este capítulo.
 
-\begin{equation}
-C_p = \frac{\omega R\rho \sum_{i}^{nodos} U_{\infty,i}U_{d,i}F_{root,i}F_{tip,i}A_i}{\dfrac{1}{2}\rho\pi R^2 U_\infty^3}
-\label{eq:gen_Cp2}
-\end{equation}
+% ---- Agregar al final de \subsection{analytic} ----
 
-\begin{figure}[h]
-\centering
-\includegraphics[height=0.35\textwidth]{images/wtActuatorFoam/correlacion1-sorensen2023}
-\caption{Correlación entre parámetro de rotación $S_0$ con tip speed ratio adimensional (izq.) y coeficiente de empuje (der.) para tres modelos de turbinas.~\cite{sorensen2023}}
-\label{fig:S0_correlacion}
-\end{figure}
-
-\begin{figure}[h]
-\centering
-\includegraphics[height=0.35\textwidth]{images/wtActuatorFoam/correlacion2-sorensen2023}
-\caption{Ajuste de $S_0$ con respecto a coeficiente de empuje para tres modelos de turbinas.~\cite{sorensen2023}}
-\label{fig:S0_ajuste}
-\end{figure}
-
-% ---- Agregar al final de \subsection{Actuador Discal Analítico} (incluye la variante Generalizada de 3.9.2) ----
-
-La implementación del Actuador Discal Analítico resulta distinta a la de los actuadores descriptos previamente, ya que se vale de expresiones analíticas para obtener las fuerzas a aplicar en cada nodo. Solo utiliza una tabla auxiliar, que provee, para cada velocidad de referencia, el coeficiente de empuje correspondiente, con el fin de resolver de forma iterativa la velocidad de referencia y el coeficiente de empuje. El flujo de trabajo, esquematizado en la Figura~\ref{fig:impl_analitico}, se describe a continuación:
-
+La implementación de \texttt{actuatorModel\_analytic} organiza el cálculo en dos recorridos sobre los nodos dentro de \texttt{applyForce()}, esquematizados en la Figura~\ref{fig:impl_analitico}. En el primero, se calcula para cada nodo la velocidad local axial sentida $U_{d,i}$, se obtiene la velocidad de entrada local equivalente $U_{\infty,i}$ mediante la función específica \texttt{induction1()} de esta variante (ecuación~\ref{eq:analitico_Uinfi}), y se acumulan los factores geométricos que determinan $a_1$ y $a_2$. Una vez calculado $q_0$ (ecuación~\ref{eq:analitico_q0_despejado}), en el segundo recorrido se calcula la fuerza normal y tangencial de cada nodo, combinando $q_0$ con la velocidad de entrada local $U_{\infty,i}$ de ese nodo, según la ecuación~\ref{eq:analitico_fz_adim} generalizada.
 \begin{enumerate}
-\item Inicialización de la simulación.
-\item Cálculo de la velocidad promedio sobre el actuador $U_d$ (loop en celdas para el cálculo de pesos según la distancia al disco y el volumen total del disco, y loop en celdas para la suma de la velocidad sensada, pesando con la distancia al disco y el volumen total).
-\item Loop en nodos para el cálculo de la posición y la velocidad de cada nodo, guardando esta última en una lista.
-\item Iteración para obtener $U_{ref}$ y $C_t$: se estima $U_{ref}$ según la ecuación~\ref{eq:analitico_Uinf} utilizando el $C_t$ de la iteración anterior, y luego se ingresa a la tabla auxiliar para obtener el $C_t$ correspondiente a esa velocidad de referencia, iterando hasta converger.
-\item Loop en nodos realizando la sumatoria para obtener los factores $a_1$, $a_2$, $a_3$, $a_4$ y $a_5$ (ver ecuaciones de la Sección~\ref{sec:analitico_generalizado_rootcorr}, correspondientes a la generalización para flujos no uniformes).
-\item Cálculo de $q_0$ y, en el caso de la variante generalizada, de $S_0$.
-\item Loop en nodos realizando la sumatoria necesaria para el cálculo de $C_p$.
-\item Cálculo de $C_p$.
-\item Loop sobre los nodos, realizando para cada uno:
-\begin{enumerate}
-\item Cálculo del factor de raíz y de punta.
-\item Cálculo de las fuerzas en el nodo.
-\item Loop en celdas para calcular los pesos según la distancia al nodo.
-\item Loop sobre celdas para aplicar las fuerzas.
+\item Calcular la velocidad promedio sobre el disco $U_d$, y obtener $C_t$, $\lambda$, $\omega$ y el ángulo de pitch mediante el modelo de inducción configurado.
+\item Primer recorrido de nodos: para cada uno, calcular la velocidad local axial sentida, la velocidad de entrada local equivalente mediante \texttt{induction1()}, el factor de punta y de raíz, y acumular los factores geométricos necesarios para $a_1$ y $a_2$.
+\item Calcular $q_0$.
+\item Segundo recorrido de nodos: para cada uno, calcular la fuerza normal y tangencial combinando $q_0$ con la velocidad de entrada local equivalente, y distribuir dicha fuerza sobre las celdas de la malla de CFD.
+\item OpenFOAM resuelve el campo de velocidades y se avanza a la siguiente iteración.
+\item Si se converge en la solución se termina la simulación, si no, se vuelve al paso 1.
 \end{enumerate}
-\item OpenFOAM resuelve el campo de velocidades.
-\item Si se converge en la solución se termina la simulación, si no, se vuelve al paso 2.
-\end{enumerate}
-
 \begin{figure}[h]
 \centering
 %\includegraphics[width=0.9\textwidth]{}
-\caption{Flujo de trabajo de implementación del Actuador Discal Analítico.}
+\caption{Flujo de trabajo de implementación del actuador \texttt{analytic}.}
 \label{fig:impl_analitico}
 \end{figure}
+
+La función específica de la variante \texttt{actuatorModel\_analytic} es \texttt{induction1()}, que aplica la ecuación~\ref{eq:analitico_Uinfi} de forma local en cada nodo, a partir de la componente axial de la velocidad sentida en dicho nodo. Esta función es homónima de \texttt{induction1()} de \texttt{wtActuatorSource}, pero se trata de dos funciones distintas pertenecientes a clases sin relación de herencia entre sí, la de \texttt{wtActuatorSource} calcula una única velocidad de referencia global para toda la turbina, mientras que la de \texttt{actuatorModel\_analytic} se aplica nodo por nodo para obtener una velocidad de entrada local equivalente.
+
+{\LARGE VER QUE EL FACTOR DE ROOT EN REALIDAD PUEDE SER CUALQUIERA, NO HACE FALTA MENCIONARLO}
 
 \subsection{\texttt{genanalytic}}
 
